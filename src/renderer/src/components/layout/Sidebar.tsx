@@ -8,17 +8,22 @@ import {
   IconChartBar,
   IconChecklist,
   IconLayoutDashboard,
+  IconLogout,
+  IconMoon,
   IconNotes,
   IconPlus,
   IconSettings,
+  IconSun,
   IconTrendingDown,
   IconTrendingUp,
   IconWallet,
 } from '@tabler/icons-react';
 import { useTaskStore } from '../../stores';
+import { useAuth } from '../../stores/auth';
 import { quick, useUi, type Page } from '../../stores/ui';
 import { dateKey } from '../../utils/date';
 import { useT } from '../../i18n';
+import { useTheme } from '../../hooks/useTheme';
 
 const NAV: { page: Page; key: string; icon: React.ElementType }[] = [
   { page: 'dashboard', key: 'nav.dashboard', icon: IconLayoutDashboard },
@@ -36,6 +41,7 @@ export const Sidebar: React.FC = () => {
   const page = useUi((s) => s.page);
   const setPage = useUi((s) => s.setPage);
   const tasks = useTaskStore((s) => s.items);
+  const { theme, toggleTheme } = useTheme();
   const overdue = useMemo(() => {
     const today = dateKey(new Date());
     return tasks.filter((t) => t.status !== 'done' && t.dueDate && t.dueDate < today).length;
@@ -86,7 +92,24 @@ export const Sidebar: React.FC = () => {
       </nav>
 
       <div className="side-foot">
-        <IconCash size={16} /> {t('nav.localData')}
+        <IconCash size={16} />
+        <span style={{ flex: 1 }}>{t('nav.localData')}</span>
+        <button
+          className="icon-btn flat"
+          aria-label={t(theme === 'dark' ? 'theme.dark' : 'theme.light')}
+          onClick={toggleTheme}
+          title={t(theme === 'dark' ? 'theme.dark' : 'theme.light')}
+        >
+          {theme === 'dark' ? <IconSun size={15} /> : <IconMoon size={15} />}
+        </button>
+        <button
+          className="icon-btn flat"
+          aria-label={t('auth.logout')}
+          onClick={() => useAuth.getState().logout()}
+          title={t('auth.logout')}
+        >
+          <IconLogout size={15} />
+        </button>
       </div>
     </aside>
   );

@@ -15,6 +15,20 @@
   --radius: 16px;
 }
 
+/* Light mode overrides */
+:root[data-theme="light"] {
+  --bg: #f4f5f8;
+  --panel: #ffffff;
+  --panel-2: #eef0f5;
+  --line: #d8dae3;
+  --line-soft: #e4e6ef;
+  --text: #1a1b22;
+  --muted: #6b6f7e;
+}
+
+:root[data-theme="light"] .select option { background: #fff; color: #1a1b22; }
+:root[data-theme="light"] .seg.full button[aria-pressed='true'] { background: #d8dae3; }
+
 html,
 body,
 #root {

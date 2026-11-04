@@ -3,7 +3,9 @@ import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import { useGoalStore, useNoteStore, useTaskStore, useTxStore } from './stores';
 import { useSettings } from './stores/settings';
+import { useAuth } from './stores/auth';
 import { useT } from './i18n';
+import { AuthPage } from './components/auth/AuthPage';
 import { AdvisorPage } from './components/advisor/AdvisorPage';
 import { quick, useUi } from './stores/ui';
 import { Sidebar } from './components/layout/Sidebar';
@@ -24,8 +26,10 @@ const App: React.FC = () => {
   const { t } = useT();
   const settingsLoaded = useSettings((s) => s.loaded);
   const lang = useSettings((s) => s.lang);
+  const { user, loaded: authLoaded } = useAuth((s) => ({ user: s.user, loaded: s.loaded }));
 
   useEffect(() => {
+    void useAuth.getState().load();
     void useSettings.getState().load();
     void useTaskStore.getState().load();
     void useTxStore.getState().load();
@@ -89,6 +93,16 @@ const App: React.FC = () => {
     void useNoteStore.getState().load();
     void useGoalStore.getState().load();
   };
+
+  if (!authLoaded) {
+    return (
+      <main className="content">
+        <div className="boot"><div className="boot-mark display">E</div></div>
+      </main>
+    );
+  }
+
+  if (!user) return <AuthPage />;
 
   return (
     <div className="app">

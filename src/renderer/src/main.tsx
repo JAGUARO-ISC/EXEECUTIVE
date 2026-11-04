@@ -8,8 +8,15 @@ import '@mantine/notifications/styles.css';
 import './styles/global.css';
 import './styles/pages.css';
 import './styles/motion.css';
+import './components/auth/auth.css';
 import App from './App';
 import { theme } from './theme';
+
+// Apply persisted theme before first paint to avoid flash
+try {
+  const t = localStorage.getItem('exec_theme');
+  if (t) document.documentElement.setAttribute('data-theme', t);
+} catch { /* private window, ignore */ }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
