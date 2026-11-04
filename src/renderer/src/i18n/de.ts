@@ -404,6 +404,51 @@ const de: Dict = {
   'tray.calendar': 'Kalender',
   'tray.quit': 'Beenden',
   'tray.tooltip': 'EXECUTIVE',
+
+  'auth.login': 'Anmelden',
+  'auth.register': 'Konto erstellen',
+  'auth.email': 'E-Mail',
+  'auth.password': 'Passwort',
+  'auth.displayName': 'Dein Name',
+  'auth.alreadyHave': 'Hast du schon ein Konto?',
+  'auth.noAccount': 'Noch kein Konto?',
+  'auth.logout': 'Abmelden',
+  'auth.welcome': 'Willkommen zurück',
+  'auth.createAccount': 'Erstelle dein Konto',
+  'auth.loginSub': 'Melde dich an, um fortzufahren',
+  'auth.registerSub': 'Registriere dich, um loszulegen',
+  'auth.invalidEmail': 'Ungültige E-Mail',
+  'auth.shortPassword': 'Mindestens 6 Zeichen',
+  'auth.nameRequired': 'Bitte gib deinen Namen ein',
+  'auth.showPassword': 'Passwort anzeigen',
+  'auth.hidePassword': 'Passwort verbergen',
+
+  'theme.dark': 'Zu Hell wechseln',
+  'theme.light': 'Zu Dunkel wechseln',
+
+  'set.accent': 'Hauptfarbe',
+  'set.accentSub': 'Farbe der Schaltflächen und Akzente',
+  'set.accent.orange': 'Orange (Standard)',
+  'set.accent.lime': 'Limonengrün',
+  'set.accent.blue': 'Blau',
+  'set.accent.violet': 'Violett',
+  'set.accent.red': 'Rot',
+
+  'set.notifTest': 'Testbenachrichtigung senden',
+  'set.notifTestBody': 'Benachrichtigungen funktionieren korrekt.',
+
+  'conv.title': 'Währungsrechner',
+  'conv.sub': 'Echtzeit-Umrechnung mit geladenen Kursen',
+  'conv.noRate': 'Kurs nicht verfügbar — Kurse aktualisieren',
+
+  'cal.template': 'Kalender-Layout',
+  'cal.template.month': 'Monat',
+  'cal.template.week': 'Woche',
+  'cal.template.agenda': 'Agenda',
+  'cal.agendaEmpty': 'Keine Termine in den nächsten 60 Tagen.',
+
+  'altro.specifica': 'Angeben (optional)',
+  'altro.ph': 'z.B. Geschenk, Abonnement...',
 };
 
 export default de;

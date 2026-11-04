@@ -404,6 +404,51 @@ const en: Dict = {
   'tray.calendar': 'Calendar',
   'tray.quit': 'Quit',
   'tray.tooltip': 'EXECUTIVE',
+
+  'auth.login': 'Sign in',
+  'auth.register': 'Create account',
+  'auth.email': 'Email',
+  'auth.password': 'Password',
+  'auth.displayName': 'Your name',
+  'auth.alreadyHave': 'Already have an account?',
+  'auth.noAccount': "Don't have an account?",
+  'auth.logout': 'Sign out',
+  'auth.welcome': 'Welcome back',
+  'auth.createAccount': 'Create your account',
+  'auth.loginSub': 'Sign in to continue',
+  'auth.registerSub': 'Sign up to get started',
+  'auth.invalidEmail': 'Invalid email',
+  'auth.shortPassword': 'Minimum 6 characters',
+  'auth.nameRequired': 'Enter your name',
+  'auth.showPassword': 'Show password',
+  'auth.hidePassword': 'Hide password',
+
+  'theme.dark': 'Switch to light',
+  'theme.light': 'Switch to dark',
+
+  'set.accent': 'Accent colour',
+  'set.accentSub': 'Colour of buttons and highlights',
+  'set.accent.orange': 'Orange (default)',
+  'set.accent.lime': 'Lime green',
+  'set.accent.blue': 'Blue',
+  'set.accent.violet': 'Violet',
+  'set.accent.red': 'Red',
+
+  'set.notifTest': 'Send test notification',
+  'set.notifTestBody': 'Notifications are working correctly.',
+
+  'conv.title': 'Currency converter',
+  'conv.sub': 'Real-time conversion using loaded rates',
+  'conv.noRate': 'Rate unavailable — update rates',
+
+  'cal.template': 'Calendar layout',
+  'cal.template.month': 'Month',
+  'cal.template.week': 'Week',
+  'cal.template.agenda': 'Agenda',
+  'cal.agendaEmpty': 'No appointments in the next 60 days.',
+
+  'altro.specifica': 'Specify (optional)',
+  'altro.ph': 'e.g. Gift, Subscription...',
 };
 
 export default en;

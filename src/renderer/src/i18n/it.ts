@@ -428,6 +428,58 @@ const it: Dict = {
   'adv.tip.recurring': 'Hai {n} spese che si ripetono ogni mese. Controllale una per una.',
   'adv.tip.over': 'Spendi più di quanto guadagni: cerca prima i tagli più grandi.',
 
+  // auth
+  'auth.login': 'Accedi',
+  'auth.register': 'Crea account',
+  'auth.email': 'Email',
+  'auth.password': 'Password',
+  'auth.displayName': 'Il tuo nome',
+  'auth.alreadyHave': 'Hai già un account?',
+  'auth.noAccount': 'Non hai un account?',
+  'auth.logout': "Esci dall'account",
+  'auth.welcome': 'Bentornato',
+  'auth.createAccount': 'Crea il tuo account',
+  'auth.loginSub': 'Accedi per continuare',
+  'auth.registerSub': 'Registrati per iniziare',
+  'auth.invalidEmail': 'Email non valida',
+  'auth.shortPassword': 'Minimo 6 caratteri',
+  'auth.nameRequired': 'Inserisci il tuo nome',
+  'auth.showPassword': 'Mostra password',
+  'auth.hidePassword': 'Nascondi password',
+
+  // theme
+  'theme.dark': 'Passa al chiaro',
+  'theme.light': 'Passa allo scuro',
+
+  // settings — accent
+  'set.accent': 'Colore principale',
+  'set.accentSub': 'Colore dei pulsanti e degli accenti',
+  'set.accent.orange': 'Arancione (default)',
+  'set.accent.lime': 'Verde lime',
+  'set.accent.blue': 'Blu',
+  'set.accent.violet': 'Viola',
+  'set.accent.red': 'Rosso',
+
+  // settings — notifications
+  'set.notifTest': 'Invia notifica di prova',
+  'set.notifTestBody': 'Le notifiche funzionano correttamente.',
+
+  // converter
+  'conv.title': 'Convertitore valute',
+  'conv.sub': 'Conversione in tempo reale con i tassi caricati',
+  'conv.noRate': 'Tasso non disponibile — aggiorna i tassi',
+
+  // calendar templates
+  'cal.template': 'Layout calendario',
+  'cal.template.month': 'Mese',
+  'cal.template.week': 'Settimana',
+  'cal.template.agenda': 'Agenda',
+  'cal.agendaEmpty': 'Nessun appuntamento nei prossimi 60 giorni.',
+
+  // altro specifica
+  'altro.specifica': 'Specifica (opzionale)',
+  'altro.ph': 'Es. Regalo, Abbonamento...',
+
   // tray
   'tray.open': 'Apri',
   'tray.calendar': 'Calendario',

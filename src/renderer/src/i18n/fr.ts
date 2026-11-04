@@ -404,6 +404,51 @@ const fr: Dict = {
   'tray.calendar': 'Calendrier',
   'tray.quit': 'Quitter',
   'tray.tooltip': 'EXECUTIVE',
+
+  'auth.login': 'Se connecter',
+  'auth.register': 'Créer un compte',
+  'auth.email': 'Email',
+  'auth.password': 'Mot de passe',
+  'auth.displayName': 'Votre nom',
+  'auth.alreadyHave': 'Vous avez déjà un compte ?',
+  'auth.noAccount': "Pas encore de compte ?",
+  'auth.logout': 'Se déconnecter',
+  'auth.welcome': 'Bienvenue',
+  'auth.createAccount': 'Créez votre compte',
+  'auth.loginSub': 'Connectez-vous pour continuer',
+  'auth.registerSub': "Inscrivez-vous pour commencer",
+  'auth.invalidEmail': 'Email invalide',
+  'auth.shortPassword': 'Minimum 6 caractères',
+  'auth.nameRequired': 'Entrez votre nom',
+  'auth.showPassword': 'Afficher le mot de passe',
+  'auth.hidePassword': 'Masquer le mot de passe',
+
+  'theme.dark': 'Passer au clair',
+  'theme.light': "Passer à l'obscur",
+
+  'set.accent': 'Couleur principale',
+  'set.accentSub': 'Couleur des boutons et des accents',
+  'set.accent.orange': 'Orange (défaut)',
+  'set.accent.lime': 'Vert citron',
+  'set.accent.blue': 'Bleu',
+  'set.accent.violet': 'Violet',
+  'set.accent.red': 'Rouge',
+
+  'set.notifTest': 'Envoyer une notification test',
+  'set.notifTestBody': 'Les notifications fonctionnent correctement.',
+
+  'conv.title': 'Convertisseur de devises',
+  'conv.sub': 'Conversion en temps réel avec les taux chargés',
+  'conv.noRate': 'Taux indisponible — mettez à jour les taux',
+
+  'cal.template': 'Mise en page du calendrier',
+  'cal.template.month': 'Mois',
+  'cal.template.week': 'Semaine',
+  'cal.template.agenda': 'Agenda',
+  'cal.agendaEmpty': 'Aucun rendez-vous dans les 60 prochains jours.',
+
+  'altro.specifica': 'Précisez (optionnel)',
+  'altro.ph': 'Ex. Cadeau, Abonnement...',
 };
 
 export default fr;
