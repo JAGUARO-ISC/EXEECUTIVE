@@ -188,6 +188,25 @@ div.row { cursor: default; }
 .kv code, .backup code { font-size: 12px; color: #b9bcc8; word-break: break-all; background: var(--panel-2); padding: 2px 6px; border-radius: 6px; border: 1px solid var(--line-soft); }
 .backup { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
 
+/* settings — accent picker */
+.accent-grid { display: flex; flex-direction: column; gap: 6px; padding: 0 20px 20px; }
+.accent-swatch {
+  display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 14px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2);
+  color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer; width: 100%;
+  transition: border-color 160ms var(--ease-out), color 160ms var(--ease-out);
+}
+.accent-swatch:hover { border-color: #3a3d49; color: var(--text); }
+.accent-swatch[aria-pressed='true'] { border-color: var(--swatch); color: var(--text); }
+.accent-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--swatch); flex: none; }
+
+/* converter */
+.conv-wrap { display: flex; flex-direction: column; gap: 10px; padding: 0 20px 20px; }
+.conv-row { display: flex; gap: 10px; align-items: center; }
+.conv-amount { flex: 1; }
+.conv-eq { text-align: center; padding: 8px 0; font-size: 20px; }
+.conv-result { font-size: 28px; font-weight: 700; }
+
 /* advisor / consigli */
 .notice {
   display: flex; align-items: flex-start; gap: 10px; padding: 12px 16px;

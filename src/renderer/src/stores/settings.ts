@@ -17,17 +17,39 @@ export interface AdvisorInput {
 
 export const DEFAULT_ADVISOR: AdvisorInput = { balance: '', currency: '', monthlySpend: '', monthlyIncome: '', debt: '', horizon: 'mid', risk: 'mid' };
 
+export type AccentName = 'orange' | 'lime' | 'blue' | 'violet' | 'red';
+
+export const ACCENT_COLORS: Record<AccentName, { accent: string; soft: string }> = {
+  orange: { accent: '#ff6f1a', soft: 'rgba(255,111,26,0.14)' },
+  lime:   { accent: '#84cc16', soft: 'rgba(132,204,22,0.14)' },
+  blue:   { accent: '#3b82f6', soft: 'rgba(59,130,246,0.14)' },
+  violet: { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.14)' },
+  red:    { accent: '#ef4444', soft: 'rgba(239,68,68,0.14)' },
+};
+
+export const ACCENT_HEX: Record<AccentName, string> = {
+  orange: '#ff6f1a', lime: '#84cc16', blue: '#3b82f6', violet: '#8b5cf6', red: '#ef4444',
+};
+
+export const applyAccent = (name: AccentName) => {
+  const a = ACCENT_COLORS[name] ?? ACCENT_COLORS.orange;
+  document.documentElement.style.setProperty('--accent', a.accent);
+  document.documentElement.style.setProperty('--accent-soft', a.soft);
+};
+
 interface SettingsStore {
   lang: Lang;
   currency: string;
   rates: Rates;
   ratesDate: string | null;
   advisor: AdvisorInput;
+  accent: AccentName;
   loaded: boolean;
   load: () => Promise<void>;
   setLang: (l: Lang) => Promise<void>;
   setCurrency: (c: string) => Promise<void>;
   setAdvisor: (a: AdvisorInput) => Promise<void>;
+  setAccent: (a: AccentName) => Promise<void>;
   refreshRates: () => Promise<string | null>;
 }
 
@@ -50,29 +72,41 @@ const parse = <T,>(s: string | undefined, fallback: T): T => {
   }
 };
 
+const ACCENT_NAMES: AccentName[] = ['orange', 'lime', 'blue', 'violet', 'red'];
+const isAccentName = (s: string): s is AccentName => ACCENT_NAMES.includes(s as AccentName);
+
 export const useSettings = create<SettingsStore>((set, get) => ({
   lang: detectLang(),
   currency: 'EUR',
   rates: {},
   ratesDate: null,
   advisor: DEFAULT_ADVISOR,
+  accent: 'orange',
   loaded: false,
   load: async () => {
     try {
       const rows = await invoke<[string, string][]>('get_settings');
       const m = Object.fromEntries(rows);
       const lang = LANGS.includes(m.lang as Lang) ? (m.lang as Lang) : get().lang;
+      const accent = isAccentName(m.accent) ? m.accent : 'orange';
+      applyAccent(accent);
       set({
         lang,
         currency: m.currency || 'EUR',
         rates: parse<Rates>(m.rates, {}),
         ratesDate: m.rates_date || null,
         advisor: { ...DEFAULT_ADVISOR, ...parse<Partial<AdvisorInput>>(m.advisor, {}) },
+        accent,
         loaded: true,
       });
     } catch {
       set({ loaded: true }); // fall back to defaults; the data stores report their own errors
     }
+  },
+  setAccent: async (accent) => {
+    applyAccent(accent);
+    set({ accent });
+    await save('accent', accent).catch(() => undefined);
   },
   setLang: async (lang) => {
     set({ lang });

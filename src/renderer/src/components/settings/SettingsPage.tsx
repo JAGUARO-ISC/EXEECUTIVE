@@ -1,12 +1,55 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { notifications } from '@mantine/notifications';
-import { IconCheck, IconDatabaseExport, IconRefresh, IconSearch } from '@tabler/icons-react';
+import { IconBell, IconCheck, IconDatabaseExport, IconRefresh, IconSearch } from '@tabler/icons-react';
 import { errMsg } from '../../stores';
-import { useSettings } from '../../stores/settings';
+import { useSettings, ACCENT_HEX, type AccentName } from '../../stores/settings';
 import { LANGS, useT } from '../../i18n';
 import { CURRENCIES } from '../../utils/currency';
 import { PageHead, Panel } from '../common/ui';
+
+const ACCENT_NAMES: AccentName[] = ['orange', 'lime', 'blue', 'violet', 'red'];
+
+import type { Rates } from '../../utils/currency';
+
+interface CurrencyConverterProps { rates: Rates; defaultCurrency: string; t: (k: string) => string; }
+
+const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ rates, defaultCurrency, t }) => {
+  const [amount, setAmount] = useState('');
+  const [from, setFrom] = useState(defaultCurrency);
+  const [to, setTo] = useState(defaultCurrency === 'USD' ? 'EUR' : 'USD');
+
+  const result = useMemo(() => {
+    const n = parseFloat(amount.replace(',', '.'));
+    if (isNaN(n) || n <= 0) return null;
+    const toEur = from === 'EUR' ? n : n / (rates[from] ?? NaN);
+    const toTarget = to === 'EUR' ? toEur : toEur * (rates[to] ?? NaN);
+    return isFinite(toTarget) ? toTarget : null;
+  }, [amount, from, to, rates]);
+
+  const fmt = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+
+  return (
+    <div className="conv-wrap">
+      <div className="conv-row">
+        <input className="input conv-amount" placeholder="0,00" value={amount} onChange={(e) => setAmount(e.currentTarget.value)} />
+        <select className="select" value={from} onChange={(e) => setFrom(e.currentTarget.value)}>
+          {CURRENCIES.map((c) => <option key={c.code} value={c.code}>{c.code}</option>)}
+        </select>
+      </div>
+      <div className="conv-eq">
+        {result !== null
+          ? <><b className="conv-result">{fmt(result)}</b> <span className="muted">{to}</span></>
+          : amount ? <span className="muted">{t('conv.noRate')}</span> : null}
+      </div>
+      <div className="conv-row">
+        <select className="select" value={to} onChange={(e) => setTo(e.currentTarget.value)} style={{ flex: 1 }}>
+          {CURRENCIES.map((c) => <option key={c.code} value={c.code}>{c.code}</option>)}
+        </select>
+      </div>
+    </div>
+  );
+};
 
 interface DbInfo {
   path: string;
@@ -21,7 +64,7 @@ const FLAG: Record<string, string> = { it: 'IT', en: 'EN', es: 'ES', fr: 'FR', d
 
 export const SettingsPage: React.FC = () => {
   const { t, locale } = useT();
-  const { lang, currency, ratesDate, setLang, setCurrency, refreshRates } = useSettings();
+  const { lang, currency, ratesDate, rates, accent, setLang, setCurrency, refreshRates, setAccent } = useSettings();
   const [info, setInfo] = useState<DbInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastBackup, setLastBackup] = useState<string | null>(null);
@@ -131,7 +174,34 @@ export const SettingsPage: React.FC = () => {
       </Panel>
 
       <Panel title={t('set.reminders')} sub={t('set.remindersSub')}>
-        <p className="muted pad">{t('set.remindersText')}</p>
+        <div className="backup">
+          <p className="muted" style={{ margin: 0, fontSize: 14 }}>{t('set.remindersText')}</p>
+          <button className="ghost-btn" onClick={() => void invoke('show_notification', { title: 'EXECUTIVE', body: t('set.notifTestBody') })}>
+            <IconBell size={15} /> {t('set.notifTest')}
+          </button>
+        </div>
+      </Panel>
+
+      <Panel title={t('set.accent')} sub={t('set.accentSub')}>
+        <div className="accent-grid" role="radiogroup" aria-label={t('set.accent')}>
+          {ACCENT_NAMES.map((name) => (
+            <button
+              key={name}
+              className="accent-swatch"
+              style={{ ['--swatch' as string]: ACCENT_HEX[name] }}
+              aria-pressed={accent === name}
+              onClick={() => void setAccent(name)}
+            >
+              <span className="accent-dot" />
+              <span>{t(`set.accent.${name}`)}</span>
+              {accent === name && <IconCheck size={14} style={{ marginLeft: 'auto' }} />}
+            </button>
+          ))}
+        </div>
+      </Panel>
+
+      <Panel title={t('conv.title')} sub={t('conv.sub')}>
+        <CurrencyConverter rates={rates} defaultCurrency={currency} t={t} />
       </Panel>
     </div>
   );
