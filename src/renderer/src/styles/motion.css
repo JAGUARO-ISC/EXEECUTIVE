@@ -1,0 +1,103 @@
+/* =====================================================================
+   Motion system. Every animation in the app uses these tokens/keyframes.
+   Rules: transform + opacity only, 120-300ms, ease-out for entrances.
+   ===================================================================== */
+:root {
+  --dur-fast: 150ms;
+  --dur: 220ms;
+  --dur-slow: 300ms;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-2: 0 10px 28px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-3: 0 28px 70px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+@keyframes m-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes m-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes m-view { from { opacity: 0; transform: scale(0.985); } to { opacity: 1; transform: none; } }
+@keyframes m-next { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+@keyframes m-prev { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+@keyframes m-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes m-pulse { 0%, 100% { opacity: 0.55; transform: scale(0.96); } 50% { opacity: 1; transform: scale(1); } }
+
+/* `backwards`: the start state applies during the delay, then normal styles take over (so exit transitions still work). */
+.swap { animation-duration: var(--dur); animation-timing-function: var(--ease-out); animation-fill-mode: backwards; }
+.swap-page { animation-name: m-fade; min-height: 100%; }
+.swap-view { animation-name: m-view; }
+.swap-next { animation-name: m-next; }
+.swap-prev { animation-name: m-prev; }
+.swap-fill { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.swap-fill > .year { flex: 1; min-height: 0; }
+
+/* Page exit: quick fade up, input is ignored for the 120ms it lasts. */
+.stage-leave {
+  animation: none;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 120ms var(--ease-out), transform 120ms var(--ease-out);
+  pointer-events: none;
+}
+
+/* One orchestrated entrance: the blocks of a page rise in a short cascade. */
+.swap-page .page > * {
+  animation: m-rise 280ms var(--ease-out) backwards;
+}
+.swap-page .page > :nth-child(2) { animation-delay: 40ms; }
+.swap-page .page > :nth-child(3) { animation-delay: 80ms; }
+.swap-page .page > :nth-child(4) { animation-delay: 120ms; }
+.swap-page .page > :nth-child(5) { animation-delay: 160ms; }
+.swap-page .page > :nth-child(n + 6) { animation-delay: 200ms; }
+
+.bar-fill { transform-origin: left center; animation: m-grow 600ms var(--ease-out) 150ms backwards; }
+
+/* Sidebar: one pill that glides between items. */
+.nav-list { position: relative; }
+.nav-indicator {
+  position: absolute; left: 0; right: 0; top: 0; height: 40px; border-radius: 11px;
+  background: var(--accent-soft);
+  transform: translateY(calc(var(--i, 0) * 42px));
+  transition: transform 280ms var(--ease-drawer);
+  pointer-events: none;
+}
+.nav-item { position: relative; z-index: 1; }
+.nav-item.active { background: transparent; }
+
+/* First paint before data is ready: invisible for 250ms so a fast local load never flashes. */
+.boot { height: 100%; display: grid; place-items: center; animation: m-fade 200ms 250ms backwards; }
+.boot-mark { width: 44px; height: 44px; border-radius: 14px; background: var(--accent); color: #1a0d03; display: grid; place-items: center; font-weight: 800; font-size: 20px; animation: m-pulse 1.4s var(--ease-in-out) infinite; }
+.error-state { max-width: 460px; margin: 18vh auto 0; padding: 28px; text-align: center; border-radius: var(--radius); border: 1px solid rgba(244, 63, 94, 0.35); background: rgba(244, 63, 94, 0.07); display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.error-state h3 { margin: 0; }
+.error-state p { margin: 0; color: #fda4af; font-size: 14px; word-break: break-word; }
+
+/* Depth */
+.panel, .stat { box-shadow: var(--shadow-1), inset 0 1px 0 rgba(255, 255, 255, 0.03); }
+.stat-accent { box-shadow: 0 10px 30px rgba(255, 111, 26, 0.22); }
+.mantine-Modal-content, .mantine-Popover-dropdown, .mantine-Menu-dropdown { box-shadow: var(--shadow-3) !important; border: 1px solid var(--line) !important; }
+.mantine-Popover-dropdown, .mantine-Menu-dropdown { box-shadow: var(--shadow-2) !important; }
+.mantine-Notification-root { border-radius: 14px !important; box-shadow: var(--shadow-2); background: var(--panel-2) !important; border: 1px solid var(--line); }
+
+/* Press feedback on interactive rows/cards and Mantine buttons. */
+.row, .tx, .goal, .note-body, .up-item, .ymonth { transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+.row:active, .tx:active, .goal:active, .up-item:active { transform: scale(0.99); }
+.mantine-Button-root, .mantine-ActionIcon-root { transition: transform var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out), filter var(--dur-fast) var(--ease-out); }
+.mantine-Button-root.mantine-Button-root:not(:disabled):active { transform: scale(0.97); }
+.mantine-Input-input, .mantine-Textarea-input { transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
+
+/* Layout stability */
+.content { scrollbar-gutter: stable; }
+.cal-side, .sidebar { scrollbar-gutter: stable; }
+
+/* Accessibility: fewer and gentler, not zero. Movement goes away, fades stay. */
+@media (prefers-reduced-motion: reduce) {
+  .swap-page, .swap-view, .swap-next, .swap-prev { animation-name: m-fade; }
+  .swap-page .page > * { animation: m-fade 200ms backwards; animation-delay: 0ms !important; }
+  .bar-fill { animation: none; }
+  .nav-indicator { transition: none; }
+  .stage-leave { transform: none; transition-duration: 1ms; }
+  .boot-mark { animation: none; }
+  .new-btn:active, .primary-btn:active, .icon-btn:active, .ghost-btn:active, .row:active, .tx:active, .goal:active, .up-item:active,
+  .mantine-Button-root.mantine-Button-root:not(:disabled):active { transform: none; }
+}
