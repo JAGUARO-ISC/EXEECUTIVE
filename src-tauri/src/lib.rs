@@ -1,3 +1,4 @@
+mod auth;
 mod data;
 mod db;
 mod notify;
@@ -46,6 +47,9 @@ pub fn run() {
             data::backup_database,
             notify::show_notification,
             tray::set_tray_labels,
+            auth::register,
+            auth::login,
+            auth::get_current_user,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

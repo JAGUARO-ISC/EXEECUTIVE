@@ -19,6 +19,7 @@ serde_json = "1.0"
 rusqlite = { version = "0.32", features = ["bundled"] }
 chrono = "0.4"
 log = "0.4"
+bcrypt = "0.15"
 
 [features]
 default = ["custom-protocol"]
