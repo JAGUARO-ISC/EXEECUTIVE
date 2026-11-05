@@ -45,4 +45,5 @@ jobs:
           releaseDraft: false
           prerelease: false
           updaterJsonPreferNsis: true
+          includeUpdaterJson: true
           projectPath: .
