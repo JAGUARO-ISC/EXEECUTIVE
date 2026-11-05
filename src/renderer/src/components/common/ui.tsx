@@ -3,6 +3,7 @@ import { useReducedMotion } from '@mantine/hooks';
 import { IconArrowDownRight, IconArrowUpRight } from '@tabler/icons-react';
 import { pctChange } from '../../utils/finance';
 import { useT } from '../../i18n';
+import { formatCountUpValue, useCountUp } from '../../hooks/useCountUp';
 
 export const PageHead: React.FC<{ title: string; sub?: string; children?: React.ReactNode }> = ({ title, sub, children }) => (
   <div className="page-head">
@@ -33,18 +34,23 @@ export const Panel: React.FC<{ title: string; sub?: string; action?: React.React
   </section>
 );
 
-export const Stat: React.FC<{ label: string; value: string; hint?: React.ReactNode; tone?: 'plain' | 'accent' | 'good' | 'bad' }> = ({
-  label,
-  value,
-  hint,
-  tone = 'plain',
-}) => (
-  <div className={`stat stat-${tone}`}>
-    <div className="stat-label">{label}</div>
-    <div className="stat-value display">{value}</div>
-    {hint && <div className="stat-hint">{hint}</div>}
-  </div>
-);
+export const Stat: React.FC<{
+  label: string;
+  value: string;
+  rawValue?: number;
+  hint?: React.ReactNode;
+  tone?: 'plain' | 'accent' | 'good' | 'bad';
+}> = ({ label, value, rawValue, hint, tone = 'plain' }) => {
+  const animated = useCountUp(rawValue ?? 0, 900);
+  const displayValue = rawValue !== undefined ? formatCountUpValue(value, animated) : value;
+  return (
+    <div className={`stat stat-${tone}`}>
+      <div className="stat-label">{label}</div>
+      <div className="stat-value display">{displayValue}</div>
+      {hint && <div className="stat-hint">{hint}</div>}
+    </div>
+  );
+};
 
 export const Empty: React.FC<{ children: React.ReactNode }> = ({ children }) => <div className="empty-box">{children}</div>;
 

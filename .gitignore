@@ -3,3 +3,6 @@ target/
 dist/
 .superpowers/
 *.log
+updater.key
+updater.key.pub
+.env

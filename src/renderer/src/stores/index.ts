@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { invoke } from '@tauri-apps/api/core';
 import type { Appointment, Goal, Note, Task, Transaction } from '../types';
+import { enqueueChange } from '../lib/sync';
 
 export const errMsg = (e: unknown): string => (typeof e === 'string' ? e : e instanceof Error ? e.message : String(e));
 
@@ -39,7 +40,8 @@ export const useAppointmentStore = create<AppointmentStore>((set, get) => ({
   },
   addAppointment: async (a) => {
     try {
-      await invoke<number>('create_appointment', { appointment: a });
+      const id = await invoke<number>('create_appointment', { appointment: a });
+      await enqueueChange({ entityKind: 'appointment', entityId: String(id), updatedAt: new Date().toISOString(), deletedAt: null, payload: { ...a, id } });
       await get().refresh();
       return true;
     } catch (e) {
@@ -50,6 +52,7 @@ export const useAppointmentStore = create<AppointmentStore>((set, get) => ({
   updateAppointment: async (id, a) => {
     try {
       await invoke('update_appointment', { id, appointment: a });
+      await enqueueChange({ entityKind: 'appointment', entityId: String(id), updatedAt: new Date().toISOString(), deletedAt: null, payload: { ...a, id } });
       await get().refresh();
       return true;
     } catch (e) {
@@ -60,6 +63,7 @@ export const useAppointmentStore = create<AppointmentStore>((set, get) => ({
   deleteAppointment: async (id) => {
     try {
       await invoke('delete_appointment', { id });
+      await enqueueChange({ entityKind: 'appointment', entityId: String(id), updatedAt: new Date().toISOString(), deletedAt: new Date().toISOString(), payload: null });
       await get().refresh();
       return true;
     } catch (e) {
@@ -89,13 +93,15 @@ interface Commands {
   remove: string;
   /** Argument name the Rust command expects for the entity. */
   key: string;
+  kind: 'task' | 'transaction' | 'note' | 'goal';
 }
 
 function makeStore<T>(c: Commands) {
   return create<EntityStore<T>>((set, get) => {
-    const run = async (fn: () => Promise<unknown>): Promise<string | null> => {
+    const run = async (fn: () => Promise<unknown>, change: (result: unknown) => Parameters<typeof enqueueChange>[0]): Promise<string | null> => {
       try {
-        await fn();
+        const result = await fn();
+        await enqueueChange(change(result));
         await get().load();
         return null;
       } catch (e) {
@@ -116,23 +122,24 @@ function makeStore<T>(c: Commands) {
           set({ error: errMsg(e), loaded: true });
         }
       },
-      add: (v) => run(() => invoke(c.create, { [c.key]: v })),
-      update: (id, v) => run(() => invoke(c.update, { id, [c.key]: v })),
-      remove: (id) => run(() => invoke(c.remove, { id })),
+      add: (v) => run(() => invoke(c.create, { [c.key]: v }), (result) => ({ entityKind: c.kind, entityId: String(result), updatedAt: new Date().toISOString(), deletedAt: null, payload: { ...v as object, id: Number(result) } })),
+      update: (id, v) => run(() => invoke(c.update, { id, [c.key]: v }), () => ({ entityKind: c.kind, entityId: String(id), updatedAt: new Date().toISOString(), deletedAt: null, payload: { ...v as object, id } })),
+      remove: (id) => run(() => invoke(c.remove, { id }), () => ({ entityKind: c.kind, entityId: String(id), updatedAt: new Date().toISOString(), deletedAt: new Date().toISOString(), payload: null })),
     };
   });
 }
 
-export const useTaskStore = makeStore<Task>({ list: 'get_tasks', create: 'create_task', update: 'update_task', remove: 'delete_task', key: 'task' });
+export const useTaskStore = makeStore<Task>({ list: 'get_tasks', create: 'create_task', update: 'update_task', remove: 'delete_task', key: 'task', kind: 'task' });
 export const useTxStore = makeStore<Transaction>({
   list: 'get_transactions',
   create: 'create_transaction',
   update: 'update_transaction',
   remove: 'delete_transaction',
   key: 'transaction',
+  kind: 'transaction',
 });
-export const useNoteStore = makeStore<Note>({ list: 'get_notes', create: 'create_note', update: 'update_note', remove: 'delete_note', key: 'note' });
-export const useGoalStore = makeStore<Goal>({ list: 'get_goals', create: 'create_goal', update: 'update_goal', remove: 'delete_goal', key: 'goal' });
+export const useNoteStore = makeStore<Note>({ list: 'get_notes', create: 'create_note', update: 'update_note', remove: 'delete_note', key: 'note', kind: 'note' });
+export const useGoalStore = makeStore<Goal>({ list: 'get_goals', create: 'create_goal', update: 'update_goal', remove: 'delete_goal', key: 'goal', kind: 'goal' });
 
 /** Marks a task done / not done, keeping every other field. */
 export const toggleTask = (t: Task): Promise<string | null> => {

@@ -12,7 +12,7 @@ fn show_main<R: Runtime>(app: &AppHandle<R>) {
     }
 }
 
-const DEFAULTS: [(&str, &str); 9] = [
+const DEFAULTS: [(&str, &str); 10] = [
     ("open", "Apri"),
     ("new_appointment", "Nuovo appuntamento"),
     ("new_task", "Nuova attività"),
@@ -20,8 +20,9 @@ const DEFAULTS: [(&str, &str); 9] = [
     ("new_expense", "Nuova uscita"),
     ("new_note", "Nuova nota"),
     ("calendar", "Calendario"),
+    ("settings", "Impostazioni"),
     ("quit", "Esci"),
-    ("tooltip", "EXECUTIVE"),
+    ("tooltip", "EXEECUTIVE"),
 ];
 
 fn label(labels: &std::collections::HashMap<String, String>, id: &str) -> String {
@@ -45,6 +46,7 @@ fn make_menu<R: Runtime>(app: &AppHandle<R>, l: &std::collections::HashMap<Strin
             &item("new_expense")?,
             &item("new_note")?,
             &item("calendar")?,
+            &item("settings")?,
             &sep,
             &item("quit")?,
         ],
@@ -81,7 +83,14 @@ pub fn build<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
                 show_main(app);
                 let _ = app.emit("navigate", "/calendar");
             }
-            "quit" => app.exit(0),
+            "settings" => {
+                show_main(app);
+                let _ = app.emit("navigate", "/settings");
+            }
+            "quit" => {
+                app.state::<crate::AppState>().request_quit();
+                app.exit(0);
+            }
             _ => {}
         })
         .on_tray_icon_event(|tray, event| {

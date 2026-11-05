@@ -1,17 +1,16 @@
 {
   "name": "executive",
   "version": "1.0.0",
-  "description": "EXECUTIVE - Premium Personal & Business Management System",
+  "description": "EXEECUTIVE - Premium Personal & Business Management System",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "tauri": "tauri",
-    "tauri dev": "tauri dev",
-    "tauri build": "tauri build",
-    "tauri:windows": "tauri target windows",
-    "tauri:bundle": "tauri bundle"
+    "dev": "pnpm --dir src/renderer dev",
+    "typecheck": "pnpm --dir src/renderer typecheck",
+    "build": "pnpm --dir src/renderer build",
+    "test": "pnpm --dir src/renderer test",
+    "bundle": "pnpm tauri build",
+    "preview": "pnpm --dir src/renderer preview",
+    "tauri": "tauri"
   },
   "dependencies": {
     "@mantine/core": "^7.14.0",

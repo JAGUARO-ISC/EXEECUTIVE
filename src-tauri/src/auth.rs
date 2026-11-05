@@ -3,6 +3,28 @@ use bcrypt::{hash, verify, DEFAULT_COST};
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
+/// Remove cloud-session metadata and retryable sync state without deleting user data.
+#[tauri::command]
+pub fn clear_session_state(db: State<Db>) -> Result<(), String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    conn.execute("DELETE FROM settings WHERE key IN ('supabase_session', 'device_id', 'device_status', 'sync_cursor')", [])
+        .map_err(|e| e.to_string())?;
+    for table in ["sync_outbox", "sync_tombstones"] {
+        let exists: bool = conn
+            .query_row(
+                "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?1)",
+                [table],
+                |row| row.get(0),
+            )
+            .map_err(|e| e.to_string())?;
+        if exists {
+            conn.execute(&format!("DELETE FROM {table}"), [])
+                .map_err(|e| e.to_string())?;
+        }
+    }
+    Ok(())
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AuthUser {

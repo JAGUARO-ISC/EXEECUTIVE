@@ -281,6 +281,7 @@ const de: Dict = {
   'goal.deleted': 'Ziel gelöscht',
   'goal.create': 'Ziel erstellen',
   'set.title': 'Einstellungen',
+  'set.devices': 'Geräte', 'set.devicesSub': 'Geräte mit Zugriff auf deine Kontodaten verwalten', 'set.currentDevice': 'Dieses Gerät', 'set.primary': 'Primärgerät', 'set.pending': 'Genehmigung ausstehend', 'set.approved': 'Genehmigt', 'set.revoked': 'Widerrufen', 'set.deviceName': 'Gerätename', 'set.renameDevice': 'Gerät umbenennen', 'set.saveDeviceName': 'Namen speichern', 'set.approveDevice': 'Genehmigen', 'set.revokeDevice': 'Widerrufen', 'set.resetDevice': 'Lokales Gerät zurücksetzen', 'set.resetDeviceConfirm': 'Lokale Geräteidentität zurücksetzen? Du musst erneut eine Genehmigung anfordern.', 'set.noDevices': 'Keine Geräte registriert.', 'set.lastSeen': 'Zuletzt gesehen: {date}',
   'set.sub': 'Sprache, Währung, Daten und Erinnerungen',
   'set.language': 'Sprache',
   'set.languageSub': 'Ändert sofort die Sprache der gesamten App',
@@ -403,7 +404,7 @@ const de: Dict = {
   'tray.open': 'Öffnen',
   'tray.calendar': 'Kalender',
   'tray.quit': 'Beenden',
-  'tray.tooltip': 'EXECUTIVE',
+  'tray.tooltip': 'EXEECUTIVE',
 
   'auth.login': 'Anmelden',
   'auth.register': 'Konto erstellen',
@@ -422,6 +423,11 @@ const de: Dict = {
   'auth.nameRequired': 'Bitte gib deinen Namen ein',
   'auth.showPassword': 'Passwort anzeigen',
   'auth.hidePassword': 'Passwort verbergen',
+  'auth.forgotPassword': 'Passwort vergessen?',
+  'auth.recoveryTitle': 'Konto wiederherstellen',
+  'auth.recoverySub': 'Wir senden dir einen Link zum Zurücksetzen des Passworts',
+  'auth.sendRecovery': 'Wiederherstellungslink senden',
+  'auth.recoverySent': 'Prüfe deine E-Mail auf den Wiederherstellungslink',
 
   'theme.dark': 'Zu Hell wechseln',
   'theme.light': 'Zu Dunkel wechseln',

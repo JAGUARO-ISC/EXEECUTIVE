@@ -302,6 +302,7 @@ const it: Dict = {
 
   // settings
   'set.title': 'Impostazioni',
+  'set.devices': 'Dispositivi', 'set.devicesSub': 'Gestisci i dispositivi che possono accedere ai dati', 'set.currentDevice': 'Questo dispositivo', 'set.primary': 'Dispositivo principale', 'set.pending': 'In attesa di approvazione', 'set.approved': 'Approvato', 'set.revoked': 'Revocato', 'set.deviceName': 'Nome dispositivo', 'set.renameDevice': 'Rinomina dispositivo', 'set.saveDeviceName': 'Salva nome', 'set.approveDevice': 'Approva', 'set.revokeDevice': 'Revoca', 'set.resetDevice': 'Reimposta dispositivo locale', 'set.resetDeviceConfirm': 'Reimpostare l’identità locale? Dovrai richiedere di nuovo l’approvazione.', 'set.noDevices': 'Nessun dispositivo registrato.', 'set.lastSeen': 'Ultimo accesso: {date}',
   'set.sub': 'Lingua, valuta, dati e promemoria',
   'set.language': 'Lingua',
   'set.languageSub': "Cambia subito la lingua dell'intera app",
@@ -446,6 +447,11 @@ const it: Dict = {
   'auth.nameRequired': 'Inserisci il tuo nome',
   'auth.showPassword': 'Mostra password',
   'auth.hidePassword': 'Nascondi password',
+  'auth.forgotPassword': 'Hai dimenticato la password?',
+  'auth.recoveryTitle': 'Recupera account',
+  'auth.recoverySub': 'Riceverai un link per reimpostare la password',
+  'auth.sendRecovery': 'Invia link di recupero',
+  'auth.recoverySent': 'Controlla la tua email per il link di recupero',
 
   // theme
   'theme.dark': 'Passa al chiaro',
@@ -484,7 +490,7 @@ const it: Dict = {
   'tray.open': 'Apri',
   'tray.calendar': 'Calendario',
   'tray.quit': 'Esci',
-  'tray.tooltip': 'EXECUTIVE',
+  'tray.tooltip': 'EXEECUTIVE',
 };
 
 export default it;

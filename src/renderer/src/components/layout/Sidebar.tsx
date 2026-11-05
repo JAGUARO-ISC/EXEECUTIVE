@@ -51,7 +51,7 @@ export const Sidebar: React.FC = () => {
     <aside className="sidebar">
       <div className="brand">
         <div className="brand-mark display">E</div>
-        <div className="brand-name display">Executive</div>
+        <div className="brand-name display">Exeecutive</div>
       </div>
 
       <Menu position="bottom-start" width={220} shadow="md">

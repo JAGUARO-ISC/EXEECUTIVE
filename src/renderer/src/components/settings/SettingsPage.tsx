@@ -7,6 +7,9 @@ import { useSettings, ACCENT_HEX, type AccentName } from '../../stores/settings'
 import { LANGS, useT } from '../../i18n';
 import { CURRENCIES } from '../../utils/currency';
 import { PageHead, Panel } from '../common/ui';
+import { DeviceManager } from './DeviceManager';
+import { check } from '@tauri-apps/plugin-updater';
+import { relaunch } from '@tauri-apps/plugin-process';
 
 const ACCENT_NAMES: AccentName[] = ['orange', 'lime', 'blue', 'violet', 'red'];
 
@@ -71,6 +74,28 @@ export const SettingsPage: React.FC = () => {
   const [busy, setBusy] = useState(false);
   const [rateBusy, setRateBusy] = useState(false);
   const [q, setQ] = useState('');
+  const [updateBusy, setUpdateBusy] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState('');
+
+  const checkForUpdate = async () => {
+    setUpdateBusy(true);
+    setUpdateMessage('Controllo aggiornamenti...');
+    try {
+      const update = await check();
+      if (!update) {
+        setUpdateMessage('EXEECUTIVE è aggiornato.');
+        return;
+      }
+      setUpdateMessage(`Versione ${update.version} disponibile. Download...`);
+      await update.downloadAndInstall();
+      setUpdateMessage('Aggiornamento installato. Riavvio...');
+      await relaunch();
+    } catch (e) {
+      setUpdateMessage(`Aggiornamento non disponibile: ${errMsg(e)}`);
+    } finally {
+      setUpdateBusy(false);
+    }
+  };
 
   const load = () => invoke<DbInfo>('db_info').then(setInfo).catch((e) => setError(errMsg(e)));
   useEffect(() => {
@@ -116,6 +141,18 @@ export const SettingsPage: React.FC = () => {
     <div className="page narrow">
       <PageHead title={t('set.title')} sub={t('set.sub')} />
       {error && <div className="err">{error}</div>}
+
+      <DeviceManager />
+
+      <Panel title="Aggiornamenti" sub="Mantieni EXEECUTIVE aggiornato">
+        <div className="backup">
+          <button className="ghost-btn" disabled={updateBusy} onClick={() => void checkForUpdate()}>
+            <IconRefresh size={15} className={updateBusy ? 'spin' : ''} />
+            {updateBusy ? 'Controllo...' : 'Verifica aggiornamenti'}
+          </button>
+          {updateMessage && <small className="muted">{updateMessage}</small>}
+        </div>
+      </Panel>
 
       <Panel title={t('set.language')} sub={t('set.languageSub')}>
         <div className="choice-grid" role="radiogroup" aria-label={t('set.language')}>
@@ -176,7 +213,7 @@ export const SettingsPage: React.FC = () => {
       <Panel title={t('set.reminders')} sub={t('set.remindersSub')}>
         <div className="backup">
           <p className="muted" style={{ margin: 0, fontSize: 14 }}>{t('set.remindersText')}</p>
-          <button className="ghost-btn" onClick={() => void invoke('show_notification', { title: 'EXECUTIVE', body: t('set.notifTestBody') })}>
+          <button className="ghost-btn" onClick={() => void invoke('show_notification', { title: 'EXEECUTIVE', body: t('set.notifTestBody') })}>
             <IconBell size={15} /> {t('set.notifTest')}
           </button>
         </div>

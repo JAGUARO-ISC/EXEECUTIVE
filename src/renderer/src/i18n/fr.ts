@@ -281,6 +281,7 @@ const fr: Dict = {
   'goal.deleted': 'Objectif supprimé',
   'goal.create': "Créer l'objectif",
   'set.title': 'Paramètres',
+  'set.devices': 'Appareils', 'set.devicesSub': 'Gérez les appareils autorisés à accéder à vos données', 'set.currentDevice': 'Cet appareil', 'set.primary': 'Appareil principal', 'set.pending': 'En attente d’approbation', 'set.approved': 'Approuvé', 'set.revoked': 'Révoqué', 'set.deviceName': 'Nom de l’appareil', 'set.renameDevice': 'Renommer l’appareil', 'set.saveDeviceName': 'Enregistrer le nom', 'set.approveDevice': 'Approuver', 'set.revokeDevice': 'Révoquer', 'set.resetDevice': 'Réinitialiser l’appareil local', 'set.resetDeviceConfirm': 'Réinitialiser cette identité locale ? Vous devrez demander une nouvelle approbation.', 'set.noDevices': 'Aucun appareil enregistré.', 'set.lastSeen': 'Dernière activité : {date}',
   'set.sub': 'Langue, devise, données et rappels',
   'set.language': 'Langue',
   'set.languageSub': "Change immédiatement la langue de toute l'application",
@@ -403,7 +404,7 @@ const fr: Dict = {
   'tray.open': 'Ouvrir',
   'tray.calendar': 'Calendrier',
   'tray.quit': 'Quitter',
-  'tray.tooltip': 'EXECUTIVE',
+  'tray.tooltip': 'EXEECUTIVE',
 
   'auth.login': 'Se connecter',
   'auth.register': 'Créer un compte',
@@ -422,6 +423,11 @@ const fr: Dict = {
   'auth.nameRequired': 'Entrez votre nom',
   'auth.showPassword': 'Afficher le mot de passe',
   'auth.hidePassword': 'Masquer le mot de passe',
+  'auth.forgotPassword': 'Mot de passe oublié ?',
+  'auth.recoveryTitle': 'Récupérer votre compte',
+  'auth.recoverySub': 'Nous vous enverrons un lien de réinitialisation',
+  'auth.sendRecovery': 'Envoyer le lien de récupération',
+  'auth.recoverySent': 'Consultez votre email pour le lien de récupération',
 
   'theme.dark': 'Passer au clair',
   'theme.light': "Passer à l'obscur",

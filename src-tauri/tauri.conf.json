@@ -1,19 +1,33 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "EXECUTIVE",
+  "productName": "EXEECUTIVE",
   "version": "1.0.0",
-  "identifier": "com.executive.app",
+  "identifier": "com.jaguarox.exeecutive",
   "build": {
-    "beforeDevCommand": "pnpm --dir src/renderer dev",
-    "beforeBuildCommand": "pnpm --dir src/renderer build",
+    "beforeDevCommand": {
+      "script": "pnpm --dir src/renderer dev",
+      "cwd": ".."
+    },
+    "beforeBuildCommand": {
+      "script": "pnpm --dir src/renderer build",
+      "cwd": ".."
+    },
     "devUrl": "http://localhost:5173",
     "frontendDist": "../dist"
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IENBMzFCNTg1MzkyM0UwQTIKUldTaTRDTTVoYlV4eWdGczNtWlQ3ZTYvMFFwRUd2QXMzYnZic2V0VTFORVNpaDBIUTJnSE9aWTIK",
+      "endpoints": [
+        "https://github.com/JAGUARO-ISC/EXEECUTIVE/releases/latest/download/latest.json"
+      ]
+    }
   },
   "app": {
     "windows": [
       {
         "label": "main",
-        "title": "EXECUTIVE",
+        "title": "EXEECUTIVE",
         "width": 1400,
         "height": 900,
         "minWidth": 1024,
@@ -29,7 +43,28 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/icon.ico"]
+    "targets": ["nsis"],
+    "publisher": "JaguaroX",
+    "shortDescription": "Personal and business management",
+    "longDescription": "EXEECUTIVE personal and business management for Windows.",
+    "category": "Productivity",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/256x256.png",
+      "icons/512x512.png",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      },
+      "nsis": {
+        "installMode": "currentUser",
+        "startMenuFolder": "EXEECUTIVE",
+        "installerIcon": "icons/icon.ico",
+        "uninstallerIcon": "icons/icon.ico"
+      }
+    }
   }
 }

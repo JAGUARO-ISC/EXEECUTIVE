@@ -6,13 +6,13 @@ import { useTheme } from '../../hooks/useTheme';
 import { useT, LANGS } from '../../i18n';
 import type { Lang } from '../../i18n';
 
-type Mode = 'login' | 'register';
+type Mode = 'login' | 'register' | 'recovery';
 
 export const AuthPage: React.FC = () => {
   const { t } = useT();
   const { setLang } = useSettings.getState();
   const { lang } = useSettings((s) => ({ lang: s.lang }));
-  const { login, register } = useAuth.getState();
+  const { login, register, requestRecovery } = useAuth.getState();
   const { theme, toggleTheme } = useTheme();
 
   const [mode, setMode] = useState<Mode>('login');
@@ -25,16 +25,19 @@ export const AuthPage: React.FC = () => {
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  const [recoverySent, setRecoverySent] = useState(false);
 
   const switchMode = (next: Mode) => {
     setSlideDir(next === 'register' ? 'fwd' : 'back');
     setErr('');
+    setRecoverySent(false);
     setSlideKey((k) => k + 1);
     setMode(next);
   };
 
   const validate = (): string | null => {
     if (!email.includes('@')) return t('auth.invalidEmail');
+    if (mode === 'recovery') return null;
     if (password.length < 6) return t('auth.shortPassword');
     if (mode === 'register' && !displayName.trim()) return t('auth.nameRequired');
     return null;
@@ -48,9 +51,12 @@ export const AuthPage: React.FC = () => {
     setErr('');
     const result = mode === 'login'
       ? await login(email, password)
-      : await register(email, password, displayName);
+      : mode === 'register'
+        ? await register(email, password, displayName)
+        : await requestRecovery(email);
     setBusy(false);
     if (result) setErr(result);
+    else if (mode === 'recovery') setRecoverySent(true);
   };
 
   const slideClass = slideDir === 'fwd' ? 'auth-slide-fwd' : 'auth-slide-back';
@@ -60,7 +66,7 @@ export const AuthPage: React.FC = () => {
       {/* Left brand panel */}
       <div className="auth-brand">
         <div className="auth-brand-logo">E</div>
-        <h1 className="auth-brand-title">EXECUTIVE</h1>
+        <h1 className="auth-brand-title">EXEECUTIVE</h1>
         <p className="auth-brand-sub">
           {t('nav.dashboard')} · {t('nav.calendar')} · {t('nav.finance')} · {t('nav.tasks')}
         </p>
@@ -78,10 +84,10 @@ export const AuthPage: React.FC = () => {
         {/* Form */}
         <div key={slideKey} className={`auth-form-wrap ${slideKey > 0 ? slideClass : ''}`}>
           <h2 className="auth-title">
-            {mode === 'login' ? t('auth.welcome') : t('auth.createAccount')}
+            {mode === 'login' ? t('auth.welcome') : mode === 'register' ? t('auth.createAccount') : t('auth.recoveryTitle')}
           </h2>
           <p className="auth-sub">
-            {mode === 'login' ? t('auth.loginSub') : t('auth.registerSub')}
+            {mode === 'login' ? t('auth.loginSub') : mode === 'register' ? t('auth.registerSub') : t('auth.recoverySub')}
           </p>
 
           <form onSubmit={(e) => void submit(e)} noValidate>
@@ -105,32 +111,38 @@ export const AuthPage: React.FC = () => {
               />
             </div>
 
-            <div className="auth-field">
-              <label htmlFor="auth-pw">{t('auth.password')}</label>
-              <div className="auth-field-wrap">
-                <input
-                  id="auth-pw" className="input"
-                  type={showPw ? 'text' : 'password'}
-                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                  placeholder="••••••••"
-                  value={password} onChange={(e) => setPassword(e.currentTarget.value)}
-                />
-                <button type="button" className="auth-eye" aria-label={t(showPw ? 'auth.hidePassword' : 'auth.showPassword')} onClick={() => setShowPw((v) => !v)}>
-                  {showPw ? <IconEyeOff size={16} /> : <IconEye size={16} />}
-                </button>
+            {mode !== 'recovery' && (
+              <div className="auth-field">
+                <label htmlFor="auth-pw">{t('auth.password')}</label>
+                <div className="auth-field-wrap">
+                  <input
+                    id="auth-pw" className="input"
+                    type={showPw ? 'text' : 'password'}
+                    autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                    placeholder="••••••••"
+                    value={password} onChange={(e) => setPassword(e.currentTarget.value)}
+                  />
+                  <button type="button" className="auth-eye" aria-label={t(showPw ? 'auth.hidePassword' : 'auth.showPassword')} onClick={() => setShowPw((v) => !v)}>
+                    {showPw ? <IconEyeOff size={16} /> : <IconEye size={16} />}
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
+            {recoverySent && <p className="auth-success">{t('auth.recoverySent')}</p>}
             {err && <p className="auth-err">{err}</p>}
 
             <button type="submit" className="auth-submit" disabled={busy}>
-              {busy ? '…' : t(mode === 'login' ? 'auth.login' : 'auth.register')}
+              {busy ? '…' : t(mode === 'login' ? 'auth.login' : mode === 'register' ? 'auth.register' : 'auth.sendRecovery')}
             </button>
           </form>
 
           <div className="auth-switch">
             {mode === 'login' ? (
-              <>{t('auth.noAccount')}{' '}
+              <>
+                <button type="button" onClick={() => switchMode('recovery')}>{t('auth.forgotPassword')}</button>
+                <br />
+                {t('auth.noAccount')}{' '}
                 <button type="button" onClick={() => switchMode('register')}>{t('auth.register')}</button>
               </>
             ) : (

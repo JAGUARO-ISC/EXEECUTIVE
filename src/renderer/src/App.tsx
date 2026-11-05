@@ -47,6 +47,7 @@ const App: React.FC = () => {
       }),
       listen<string>('navigate', (e) => {
         if (e.payload === '/calendar') setPage('calendar');
+        if (e.payload === '/settings') setPage('settings');
       }),
     ];
     return () => {
@@ -66,6 +67,7 @@ const App: React.FC = () => {
         new_expense: t('quick.expense'),
         new_note: t('quick.note'),
         calendar: t('tray.calendar'),
+        settings: t('set.title'),
         quit: t('tray.quit'),
         tooltip: t('tray.tooltip'),
         notif_task_title: t('task.notifTitle'),

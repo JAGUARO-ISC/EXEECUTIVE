@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json.schemastore.org/tauri2.json",
+  "productName": "EXECUTIVE",
+  "version": "1.0.0",
+  "description": "Premium Personal & Business Management System",
+  "authors": ["JaguaroX"],
+  "license": "Proprietary",
+  "homepage": "https://executive.app",
+  "repository": "",
+  "publish": {
+    "npm": false,
+    "github": false
+  },
+  "build": {
+    "distDir": "../dist",
+    "devPath": "http://localhost:5173",
+    "beforeDevCommand": "",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist",
+    "withGlobalTauri": false
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "shell": {
+        "all": false,
+        "open": true,
+        "scope": [
+          {
+            "name": "Open files",
+            "allow": ["$APPDATA/**"]
+          }
+        ]
+      },
+      "fs": {
+        "all": false,
+        "readFile": true,
+        "writeFile": true,
+        "readDir": true,
+        "createDir": true,
+        "removeDir": true,
+        "removeFile": true,
+        "scope": [
+          {
+            "name": "App Data",
+            "allow": ["$APPDATA/EXECUTIVE/**"]
+          }
+        ]
+      },
+      "path": {
+        "all": false,
+        "appDataDir": true,
+        "appLocalDataDir": true,
+        "appCacheDir": true,
+        "appConfigDir": true
+      },
+      "dialog": {
+        "all": false,
+        "open": true,
+        "save": true
+      },
+      "notification": {
+        "all": true
+      },
+      "systemTray": {
+        "all": true
+      },
+      "clipboard": {
+        "all": false,
+        "writeText": true
+      },
+      "http": {
+        "all": false,
+        "request": true,
+        "scope": [
+          {
+            "name": "Update Checker",
+            "allow": ["https://api.github.com/**"]
+          }
+        ]
+      }
+    },
+    "bundle": {
+      "active": true,
+      "targets": "all",
+      "identifier": "com.executive.app",
+      "icon": [
+        {
+          "file": "icons/icon.ico",
+          "sizes": ["32x32", "128x128", "256x256"]
+        }
+      ],
+      "resources": [],
+      "externalBinaries": [],
+      "windows": [
+        {
+          "name": "EXECUTIVE",
+          "identifier": "com.executive.app",
+          "version": "1.0.0",
+          "publisher": "JaguaroX",
+          "icon": "icons/icon.ico",
+          "shortName": "EXECUTIVE",
+          "longName": "EXECUTIVE - Premium Management System",
+          "productName": "EXECUTIVE",
+          "fileDescription": "Personal & Business Management",
+          "copyright": "© 2026 JaguaroX",
+          "trademarks": "EXECUTIVE",
+          "originalFilename": "executive.exe",
+          "internalName": "EXECUTIVE"
+        }
+      ],
+      "macOS": {
+        "entitlements": null,
+        "hardenedRuntime": true,
+        "gatekeeper": null,
+        "notarization": null,
+        "signing": null
+      },
+      "linux": {
+        "appImage": {
+          "productName": "EXECUTIVE"
+        },
+        "deb": {
+          "maintainer": "JaguaroX <support@executive.app>"
+        },
+        "appData": {
+          "productName": "EXECUTIVE"
+        }
+      }
+    },
+    "updater": {
+      "active": true,
+      "endpoints": [
+        {
+          "url": "https://github.com/JaguaroX/EXECUTIVE/releases",
+          "platforms": ["windows-x86_64"]
+        }
+      ],
+      "dialog": true,
+      "pubkey": ""
+    },
+    "plugins": {
+      "positioner": {
+        "active": true
+      },
+      "notification": {
+        "active": true
+      },
+      "system-tray": {
+        "active": true
+      }
+    },
+    "windows": [
+      {
+        "name": "main",
+        "identifier": "main",
+        "title": "EXECUTIVE",
+        "width": 1400,
+        "height": 900,
+        "minWidth": 1024,
+        "minHeight": 768,
+        "maxWidth": 1920,
+        "maxHeight": 1080,
+        "x": null,
+        "y": null,
+        "center": true,
+        "resizable": true,
+        "fullscreen": false,
+        "focus": true,
+        "decorations": true,
+        "transparent": false,
+        "visible": true,
+        "alwaysOnTop": false,
+        "skipTaskbar": false,
+        "contentProtection": false,
+        "fileDropEnabled": true,
+        "acceptFirstMouse": true,
+        "theme": "System",
+        "userAgent": null
+      }
+    ],
+    "security": {
+      "csp": null,
+      "strictTransportSecurity": false,
+      "xframeOptions": "DENY",
+      "contentSecurityPolicy": {
+        "directives": {},
+        "reportOnly": false
+      },
+      "crossOriginOpenerPolicy": "SAME_ORIGIN",
+      "crossOriginEmbedderPolicy": "UNSAFE_NONE",
+      "crossOriginResourcePolicy": "SAME_ORIGIN"
+    }
+  },
+  "app": {
+    "enableUpdater": true,
+    "enableAutoStart": false,
+    "autoStartLabel": "EXECUTIVE",
+    "autoStartArgs": []
+  }
+}

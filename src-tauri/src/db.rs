@@ -1,8 +1,36 @@
-use rusqlite::{params, Connection, Row};
+use rusqlite::{params, Connection, OptionalExtension, Row};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::sync::Mutex;
+use uuid::Uuid;
 
 pub struct Db(pub Mutex<Connection>);
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SyncChange {
+    #[serde(default)]
+    pub id: Option<i64>,
+    #[serde(default)]
+    pub account_id: Option<String>,
+    #[serde(default)]
+    pub device_id: Option<String>,
+    pub entity_kind: String,
+    pub entity_id: String,
+    pub updated_at: String,
+    #[serde(default)]
+    pub deleted_at: Option<String>,
+    #[serde(default)]
+    pub payload: Option<Value>,
+}
+
+fn sync_kind_valid(kind: &str) -> bool {
+    matches!(kind, "appointment" | "task" | "transaction" | "note" | "goal")
+}
+
+fn sync_id_valid(id: &str) -> bool {
+    !id.is_empty() && id.chars().all(|c| c.is_ascii_digit())
+}
 
 const SCHEMA: &str = r#"
 PRAGMA journal_mode = WAL;
@@ -32,6 +60,17 @@ CREATE TABLE IF NOT EXISTS settings (
     value TEXT NOT NULL,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS notification_log (
+    notification_key TEXT PRIMARY KEY,
+    entity_type TEXT NOT NULL,
+    entity_id INTEGER NOT NULL,
+    trigger_at TEXT NOT NULL,
+    reminder_type TEXT NOT NULL,
+    claimed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    delivered_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_notification_log_entity ON notification_log(entity_type, entity_id);
 
 CREATE TABLE IF NOT EXISTS tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -95,6 +134,37 @@ CREATE INDEX IF NOT EXISTS idx_tasks_due ON tasks(due_date);
 CREATE INDEX IF NOT EXISTS idx_tx_date ON transactions(date);
 CREATE INDEX IF NOT EXISTS idx_appointments_start ON appointments(start_datetime);
 CREATE INDEX IF NOT EXISTS idx_appointments_end ON appointments(end_datetime);
+
+CREATE TABLE IF NOT EXISTS sync_outbox (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    account_id TEXT,
+    device_id TEXT,
+    entity_kind TEXT NOT NULL,
+    entity_id TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    deleted_at TEXT,
+    payload TEXT,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    next_attempt_at TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(account_id, entity_kind, entity_id)
+);
+CREATE TABLE IF NOT EXISTS sync_tombstones (
+    account_id TEXT,
+    device_id TEXT,
+    entity_kind TEXT NOT NULL,
+    entity_id TEXT NOT NULL,
+    deleted_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    UNIQUE(account_id, entity_kind, entity_id)
+);
+CREATE TABLE IF NOT EXISTS sync_cursors (
+    account_id TEXT PRIMARY KEY,
+    cursor TEXT
+);
+CREATE INDEX IF NOT EXISTS sync_outbox_pending_idx ON sync_outbox(next_attempt_at, created_at);
+CREATE INDEX IF NOT EXISTS sync_outbox_scope_idx ON sync_outbox(account_id, device_id);
+CREATE INDEX IF NOT EXISTS sync_tombstones_scope_idx ON sync_tombstones(account_id, device_id);
 "#;
 
 pub fn open(path: &std::path::Path) -> Result<Db, rusqlite::Error> {
@@ -314,6 +384,125 @@ pub fn set_setting(db: tauri::State<Db>, key: String, value: String) -> Result<(
     )
     .map_err(|e| e.to_string())?;
     Ok(())
+}
+
+#[tauri::command]
+pub fn get_device_identity(db: tauri::State<Db>) -> Result<String, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    let existing: Option<String> = conn
+        .query_row("SELECT value FROM settings WHERE key = 'device_identity'", [], |row| row.get(0))
+        .optional()
+        .map_err(|e| e.to_string())?;
+    if let Some(identity) = existing {
+        return Ok(identity);
+    }
+    let identity = Uuid::new_v4().to_string();
+    conn.execute(
+        "INSERT INTO settings (key, value, updated_at) VALUES ('device_identity', ?1, CURRENT_TIMESTAMP)",
+        params![identity],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(identity)
+}
+
+#[tauri::command]
+pub fn get_device_name(db: tauri::State<Db>) -> Result<String, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    let name: Option<String> = conn
+        .query_row("SELECT value FROM settings WHERE key = 'device_name'", [], |row| row.get(0))
+        .optional()
+        .map_err(|e| e.to_string())?;
+    Ok(name.filter(|value| !value.trim().is_empty()).unwrap_or_else(|| "This device".to_string()))
+}
+
+#[tauri::command]
+pub fn set_device_name(db: tauri::State<Db>, name: String) -> Result<(), String> {
+    let trimmed = name.trim();
+    if trimmed.is_empty() || trimmed.len() > 80 {
+        return Err("Device name must contain 1 to 80 characters".to_string());
+    }
+    set_setting(db, "device_name".to_string(), trimmed.to_string())
+}
+
+#[tauri::command]
+pub fn reset_device_identity(db: tauri::State<Db>) -> Result<(), String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    conn.execute("DELETE FROM settings WHERE key = 'device_identity'", [])
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn sync_enqueue_change(db: tauri::State<Db>, change: SyncChange) -> Result<(), String> {
+    if !sync_kind_valid(&change.entity_kind) || !sync_id_valid(&change.entity_id) {
+        return Err("Invalid sync entity".into());
+    }
+    if change.deleted_at.is_none() && change.payload.is_none() {
+        return Err("Sync payload is required".into());
+    }
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    let payload = change.payload.as_ref().map(serde_json::to_string).transpose().map_err(|e| e.to_string())?;
+    conn.execute(
+        "INSERT INTO sync_outbox (account_id, device_id, entity_kind, entity_id, updated_at, deleted_at, payload, next_attempt_at) VALUES (?1,?2,?3,?4,?5,?6,?7,CURRENT_TIMESTAMP) ON CONFLICT(account_id, entity_kind, entity_id) DO UPDATE SET device_id=excluded.device_id, updated_at=excluded.updated_at, deleted_at=excluded.deleted_at, payload=excluded.payload, next_attempt_at=CURRENT_TIMESTAMP, attempts=0",
+        params![change.account_id, change.device_id, change.entity_kind, change.entity_id, change.updated_at, change.deleted_at, payload],
+    ).map_err(|e| e.to_string())?;
+    if let Some(deleted_at) = change.deleted_at {
+        conn.execute(
+            "INSERT INTO sync_tombstones (account_id, device_id, entity_kind, entity_id, deleted_at, updated_at) VALUES (?1,?2,?3,?4,?5,?6) ON CONFLICT(account_id, entity_kind, entity_id) DO UPDATE SET device_id=excluded.device_id, deleted_at=excluded.deleted_at, updated_at=excluded.updated_at",
+            params![change.account_id, change.device_id, change.entity_kind, change.entity_id, deleted_at, change.updated_at],
+        ).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub fn sync_get_outbox(db: tauri::State<Db>) -> Result<Vec<SyncChange>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    let mut stmt = conn.prepare("SELECT id, account_id, device_id, entity_kind, entity_id, updated_at, deleted_at, payload FROM sync_outbox WHERE next_attempt_at IS NULL OR next_attempt_at <= CURRENT_TIMESTAMP ORDER BY created_at LIMIT 100").map_err(|e| e.to_string())?;
+    let rows = stmt.query_map([], |row| {
+        let payload: Option<String> = row.get(7)?;
+        Ok(SyncChange { id: row.get(0)?, account_id: row.get(1)?, device_id: row.get(2)?, entity_kind: row.get(3)?, entity_id: row.get(4)?, updated_at: row.get(5)?, deleted_at: row.get(6)?, payload: payload.map(|value| serde_json::from_str(&value)).transpose().map_err(|e| rusqlite::Error::FromSqlConversionFailure(7, rusqlite::types::Type::Text, Box::new(e)))? })
+    }).map_err(|e| e.to_string())?;
+    rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn sync_mark_uploaded(db: tauri::State<Db>, ids: Vec<i64>) -> Result<(), String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    for id in ids { conn.execute("DELETE FROM sync_outbox WHERE id=?1", params![id]).map_err(|e| e.to_string())?; }
+    Ok(())
+}
+
+#[tauri::command]
+pub fn sync_get_cursor(db: tauri::State<Db>) -> Result<Option<String>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    conn.query_row("SELECT cursor FROM sync_cursors WHERE account_id = 'local'", [], |row| row.get(0)).optional().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn sync_set_cursor(db: tauri::State<Db>, cursor: Option<String>) -> Result<(), String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    conn.execute("INSERT INTO sync_cursors (account_id, cursor) VALUES ('local', ?1) ON CONFLICT(account_id) DO UPDATE SET cursor=excluded.cursor", params![cursor]).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn sync_apply_remote(db: tauri::State<Db>, change: SyncChange) -> Result<(), String> {
+    if !sync_kind_valid(&change.entity_kind) || !sync_id_valid(&change.entity_id) { return Err("Invalid sync entity".into()); }
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    let local_updated: Option<String> = match change.entity_kind.as_str() {
+        "appointment" => conn.query_row("SELECT updated_at FROM appointments WHERE id=?1", params![change.entity_id], |r| r.get(0)).optional().map_err(|e| e.to_string())?,
+        "note" => conn.query_row("SELECT updated_at FROM notes WHERE id=?1", params![change.entity_id], |r| r.get(0)).optional().map_err(|e| e.to_string())?,
+        _ => None,
+    };
+    if local_updated.as_deref().is_some_and(|value| value >= change.updated_at.as_str()) { return Ok(()); }
+    if let Some(deleted_at) = change.deleted_at {
+        let table = match change.entity_kind.as_str() { "appointment" => "appointments", "task" => "tasks", "transaction" => "transactions", "note" => "notes", "goal" => "goals", _ => return Err("Invalid sync entity".into()) };
+        conn.execute(&format!("DELETE FROM {table} WHERE id=?1"), params![change.entity_id]).map_err(|e| e.to_string())?;
+        conn.execute("INSERT INTO sync_tombstones (account_id, device_id, entity_kind, entity_id, deleted_at, updated_at) VALUES (?1,?2,?3,?4,?5,?6) ON CONFLICT(account_id, entity_kind, entity_id) DO UPDATE SET deleted_at=excluded.deleted_at, updated_at=excluded.updated_at", params![change.account_id, change.device_id, change.entity_kind, change.entity_id, deleted_at, change.updated_at]).map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+    Err("Remote entity application requires a typed payload adapter".into())
 }
 
 #[cfg(test)]

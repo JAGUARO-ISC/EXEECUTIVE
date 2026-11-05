@@ -18,6 +18,23 @@ const fromDate = (d: Date | null): string | null => (d ? dateKey(d) : null);
 /** Sentinel for the free-text category choice. Never stored. */
 const OTHER = '__other__';
 
+const OtherDetailField: React.FC<{
+  value: string;
+  error?: string;
+  onChange: (value: string) => void;
+}> = ({ value, error, onChange }) => {
+  const { t } = useT();
+  return (
+    <TextInput
+      label={t('fin.otherCat')}
+      placeholder={t('fin.otherCatPh')}
+      value={value}
+      error={error}
+      onChange={(e) => onChange(e.currentTarget.value)}
+    />
+  );
+};
+
 const useOpts = () => {
   const { t } = useT();
   const cat = useCat();
@@ -88,6 +105,7 @@ const TaskModal: React.FC<{ task: Task | null; onClose: () => void }> = ({ task,
   const [priority, setPriority] = useState(String(task?.priority ?? 1));
   const [status, setStatus] = useState<string>(task?.status ?? 'todo');
   const [category, setCategory] = useState<string | null>(task?.category ?? 'Lavoro');
+  const [custom, setCustom] = useState(category === 'Altro' ? task?.description ?? '' : '');
   const [reminder, setReminder] = useState<number | string>(task?.reminderMinutes ?? 0);
   const [titleErr, setTitleErr] = useState<string | null>(null);
 
@@ -97,7 +115,7 @@ const TaskModal: React.FC<{ task: Task | null; onClose: () => void }> = ({ task,
     if (Number(reminder) > 0 && !due) return setError(t('task.needDue'));
     const v: Omit<Task, 'id'> = {
       title: title.trim(),
-      description: description || null,
+      description: description || (category === 'Altro' && custom.trim() ? custom.trim() : null),
       dueDate: fromDate(due),
       dueTime: time || null,
       priority: Number(priority),
@@ -123,9 +141,10 @@ const TaskModal: React.FC<{ task: Task | null; onClose: () => void }> = ({ task,
           <Select label={t('common.status')} allowDeselect={false} data={o.status} value={status} onChange={(v) => setStatus(v ?? 'todo')} />
         </Group>
         <Group grow>
-          <Select label={t('common.category')} data={o.cats(TASK_CATEGORIES)} value={category} onChange={setCategory} />
+          <Select label={t('common.category')} data={o.cats(TASK_CATEGORIES)} value={category} onChange={(next) => { setCategory(next); if (next !== 'Altro') setCustom(''); }} />
           <NumberInput label={t('task.reminder')} min={0} max={10080} value={reminder} onChange={setReminder} />
         </Group>
+        {category === 'Altro' && <OtherDetailField value={custom} onChange={setCustom} />}
         <Footer saving={saving} editing={!!task?.id} submitLabel={task?.id ? t('common.save') : t('task.create')} onClose={onClose} onDelete={() => void run(() => remove(task!.id!), t('task.deleted'))} />
       </Stack>
     </form>
@@ -230,12 +249,10 @@ const TransactionModal: React.FC<{ kind: TxKind; transaction: Transaction | null
           <Select label={t('fin.method')} data={o.pay} value={method} onChange={setMethod} allowDeselect={false} />
         </Group>
         {needsCustom && (
-          <TextInput
-            label={t('fin.otherCat')}
-            placeholder={t('fin.otherCatPh')}
+          <OtherDetailField
             value={custom}
             error={errs.custom}
-            onChange={(e) => { setCustom(e.currentTarget.value); setErrs((x) => ({ ...x, custom: undefined })); }}
+            onChange={(value) => { setCustom(value); setErrs((x) => ({ ...x, custom: undefined })); }}
           />
         )}
         <TextInput
@@ -272,6 +289,7 @@ const NoteModal: React.FC<{ note: Note | null; onClose: () => void }> = ({ note,
   const [title, setTitle] = useState(note?.title ?? '');
   const [content, setContent] = useState(note?.content ?? '');
   const [category, setCategory] = useState<string | null>(note?.category ?? 'Idee');
+  const [custom, setCustom] = useState(category === 'Altro' ? note?.content ?? '' : '');
   const [linked, setLinked] = useState<Date | null>(toDate(note?.linkedDate));
   const [important, setImportant] = useState(note?.important ?? false);
   const [titleErr, setTitleErr] = useState<string | null>(null);
@@ -279,7 +297,7 @@ const NoteModal: React.FC<{ note: Note | null; onClose: () => void }> = ({ note,
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return setTitleErr(t('common.titleRequired'));
-    const v: Omit<Note, 'id'> = { title: title.trim(), content: content || null, category, linkedDate: fromDate(linked), important };
+    const v: Omit<Note, 'id'> = { title: title.trim(), content: content || (category === 'Altro' && custom.trim() ? custom.trim() : null), category, linkedDate: fromDate(linked), important };
     void run(() => (note?.id ? update(note.id, v) : add(v)), note?.id ? t('note.updated') : t('note.created'));
   };
 
@@ -290,9 +308,10 @@ const NoteModal: React.FC<{ note: Note | null; onClose: () => void }> = ({ note,
         <TextInput label={t('common.title')} data-autofocus value={title} error={titleErr} onChange={(e) => { setTitle(e.currentTarget.value); setTitleErr(null); }} />
         <Textarea label={t('note.content')} autosize minRows={7} maxRows={14} value={content} onChange={(e) => setContent(e.currentTarget.value)} />
         <Group grow align="flex-start">
-          <Select label={t('common.category')} data={o.cats(NOTE_CATEGORIES)} value={category} onChange={setCategory} />
+          <Select label={t('common.category')} data={o.cats(NOTE_CATEGORIES)} value={category} onChange={(next) => { setCategory(next); if (next !== 'Altro') setCustom(''); }} />
           <DatePickerInput label={t('note.link')} clearable valueFormat="DD MMM YYYY" value={linked} onChange={setLinked} />
         </Group>
+        {category === 'Altro' && <OtherDetailField value={custom} onChange={setCustom} />}
         <Switch label={t('note.isImportant')} checked={important} onChange={(e) => setImportant(e.currentTarget.checked)} />
         <Footer saving={saving} editing={!!note?.id} submitLabel={note?.id ? t('common.save') : t('note.create')} onClose={onClose} onDelete={() => void run(() => remove(note!.id!), t('note.deleted'))} />
       </Stack>

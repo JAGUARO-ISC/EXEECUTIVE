@@ -41,7 +41,7 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
           <Group>
             <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
             <Text size="xl" fw={700} c={isDark ? 'white' : 'dark'}>
-              EXECUTIVE
+              EXEECUTIVE
             </Text>
           </Group>
           <Group gap="sm">

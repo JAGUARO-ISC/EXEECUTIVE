@@ -281,6 +281,7 @@ const es: Dict = {
   'goal.deleted': 'Objetivo eliminado',
   'goal.create': 'Crear objetivo',
   'set.title': 'Ajustes',
+  'set.devices': 'Dispositivos', 'set.devicesSub': 'Gestiona los dispositivos que pueden acceder a tus datos', 'set.currentDevice': 'Este dispositivo', 'set.primary': 'Dispositivo principal', 'set.pending': 'Pendiente de aprobación', 'set.approved': 'Aprobado', 'set.revoked': 'Revocado', 'set.deviceName': 'Nombre del dispositivo', 'set.renameDevice': 'Renombrar dispositivo', 'set.saveDeviceName': 'Guardar nombre', 'set.approveDevice': 'Aprobar', 'set.revokeDevice': 'Revocar', 'set.resetDevice': 'Restablecer dispositivo local', 'set.resetDeviceConfirm': '¿Restablecer la identidad local? Deberás solicitar aprobación de nuevo.', 'set.noDevices': 'No hay dispositivos registrados.', 'set.lastSeen': 'Último acceso: {date}',
   'set.sub': 'Idioma, moneda, datos y recordatorios',
   'set.language': 'Idioma',
   'set.languageSub': 'Cambia al instante el idioma de toda la app',
@@ -403,7 +404,7 @@ const es: Dict = {
   'tray.open': 'Abrir',
   'tray.calendar': 'Calendario',
   'tray.quit': 'Salir',
-  'tray.tooltip': 'EXECUTIVE',
+  'tray.tooltip': 'EXEECUTIVE',
 
   'auth.login': 'Iniciar sesión',
   'auth.register': 'Crear cuenta',
@@ -422,6 +423,11 @@ const es: Dict = {
   'auth.nameRequired': 'Introduce tu nombre',
   'auth.showPassword': 'Mostrar contraseña',
   'auth.hidePassword': 'Ocultar contraseña',
+  'auth.forgotPassword': '¿Has olvidado tu contraseña?',
+  'auth.recoveryTitle': 'Recuperar cuenta',
+  'auth.recoverySub': 'Te enviaremos un enlace para restablecer la contraseña',
+  'auth.sendRecovery': 'Enviar enlace de recuperación',
+  'auth.recoverySent': 'Revisa tu email para ver el enlace de recuperación',
 
   'theme.dark': 'Cambiar a claro',
   'theme.light': 'Cambiar a oscuro',

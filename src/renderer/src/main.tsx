@@ -10,7 +10,10 @@ import './styles/pages.css';
 import './styles/motion.css';
 import './components/auth/auth.css';
 import App from './App';
+import { reportRuntimeConfig, runtimeConfig } from './lib/runtimeConfig';
 import { theme } from './theme';
+
+reportRuntimeConfig(runtimeConfig);
 
 // Apply persisted theme before first paint to avoid flash
 try {
@@ -20,7 +23,7 @@ try {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <MantineProvider theme={theme} defaultColorScheme="dark" forceColorScheme="dark">
+    <MantineProvider theme={theme} defaultColorScheme="dark">
       <Notifications position="top-right" />
       <App />
     </MantineProvider>
