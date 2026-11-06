@@ -7,6 +7,7 @@ import { addDays, CATEGORY_COLORS, dateKey, expandOccurrences, formatTime, start
 import { dailySeries, inMonth, shiftMonth, totals, ymOf } from '../../utils/finance';
 import { useMoney } from '../../utils/useMoney';
 import { PRIORITY_COLORS } from '../../utils/categories';
+import { getLinkPreview } from '../../utils/linkMetadata';
 import { useT } from '../../i18n';
 import { useChartAnim, chartTooltip, Delta, Empty, PageHead, Panel, Progress, Stat } from '../common/ui';
 import type { Task } from '../../types';
@@ -16,6 +17,7 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 export const DashboardPage: React.FC = () => {
   const { t, locale } = useT();
   const anim = useChartAnim();
+  const chartAccent = 'var(--accent)';
   const { tx, fmt, fmtIn } = useMoney();
   const setPage = useUi((s) => s.setPage);
   const modal = useUi((s) => s.modal);
@@ -87,7 +89,7 @@ export const DashboardPage: React.FC = () => {
                   <XAxis dataKey="day" stroke="#6b6f7e" tickLine={false} axisLine={false} fontSize={12} />
                   <YAxis stroke="#6b6f7e" tickLine={false} axisLine={false} fontSize={12} width={72} tickFormatter={(v: number) => fmt(v, true)} />
                   <Tooltip {...chartTooltip} formatter={(v: number) => [fmt(v), t('st.balance')]} labelFormatter={(d) => t('fin.day', { n: d })} />
-                  <Area {...anim} type="monotone" dataKey="balance" stroke="#ff6f1a" strokeWidth={2} fill="url(#bal)" />
+                  <Area {...anim} type="monotone" dataKey="balance" stroke={chartAccent} strokeWidth={2} fill="url(#bal)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -105,7 +107,10 @@ export const DashboardPage: React.FC = () => {
                   <span className="row-main">
                     <b>{o.title}</b>
                     <small>{formatTime(o.occurrenceStart)} - {formatTime(o.occurrenceEnd)}</small>
+                    {o.source.description && <small className="appointment-description">{o.source.description}</small>}
+                    {o.source.link && getLinkPreview(o.source.link) && <small className="appointment-link">{getLinkPreview(o.source.link)?.label}</small>}
                   </span>
+                  {o.source.link && getLinkPreview(o.source.link) && <img className="appointment-favicon" src={getLinkPreview(o.source.link)?.imageUrl} alt="" />}
                 </button>
               ))}
             </div>
@@ -125,7 +130,10 @@ export const DashboardPage: React.FC = () => {
                   <span className="row-main">
                     <b>{o.title}</b>
                     <small>{short(o.occurrenceStart)}, {formatTime(o.occurrenceStart)}</small>
+                    {o.source.description && <small className="appointment-description">{o.source.description}</small>}
+                    {o.source.link && getLinkPreview(o.source.link) && <small className="appointment-link">{getLinkPreview(o.source.link)?.label}</small>}
                   </span>
+                  {o.source.link && getLinkPreview(o.source.link) && <img className="appointment-favicon" src={getLinkPreview(o.source.link)?.imageUrl} alt="" />}
                 </button>
               ))}
             </div>

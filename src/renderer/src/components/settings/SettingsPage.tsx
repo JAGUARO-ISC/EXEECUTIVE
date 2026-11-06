@@ -10,7 +10,6 @@ import { PageHead, Panel } from '../common/ui';
 import { DeviceManager } from './DeviceManager';
 import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
-import { ProfileSettings } from '../profile/ProfileSettings';
 import { useTutorialStore } from '../../stores/tutorial';
 
 const ACCENT_NAMES: AccentName[] = ['orange', 'lime', 'blue', 'violet', 'red'];
@@ -144,8 +143,6 @@ export const SettingsPage: React.FC = () => {
     <div className="page narrow">
       <PageHead title={t('set.title')} sub={t('set.sub')} />
       {error && <div className="err">{error}</div>}
-
-      <ProfileSettings />
       <Panel title="Tutorial" sub="Rivedi la guida interattiva di EXEECUTIVE">
         <div className="backup">
           <button className="ghost-btn" onClick={restartTutorial}>Ripeti tutorial</button>

@@ -66,7 +66,7 @@ export const createSupabaseSyncTransport = (): SyncTransport => {
       const result = await query.order('updated_at', { ascending: true });
       if (result.error) throw new Error(result.error.message);
       const changes = (result.data ?? []) as unknown as SyncChange[];
-      return { changes, cursor: changes.at(-1)?.updatedAt ?? cursor };
+      return { changes, cursor: changes.length > 0 ? changes[changes.length - 1].updatedAt : cursor };
     },
   };
 };

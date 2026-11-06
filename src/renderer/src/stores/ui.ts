@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Appointment, Goal, Note, Task, Transaction, TxKind } from '../types';
 
-export type Page = 'dashboard' | 'calendar' | 'tasks' | 'finance' | 'advisor' | 'stats' | 'notes' | 'settings';
+export type Page = 'dashboard' | 'calendar' | 'tasks' | 'finance' | 'advisor' | 'stats' | 'notes' | 'profile' | 'settings';
 
 export type ModalState =
   | { type: 'appointment'; appointment: Appointment | null; date: Date }
@@ -22,7 +22,7 @@ interface UiStore {
 }
 
 const KEY = 'executive.page';
-const PAGES: Page[] = ['dashboard', 'calendar', 'tasks', 'finance', 'advisor', 'stats', 'notes', 'settings'];
+const PAGES: Page[] = ['dashboard', 'calendar', 'tasks', 'finance', 'advisor', 'stats', 'notes', 'profile', 'settings'];
 
 const initialPage = (): Page => {
   try {

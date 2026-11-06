@@ -93,8 +93,10 @@ export const Sidebar: React.FC = () => {
       </nav>
 
       <div className="side-foot">
-        <button className="profile-avatar" aria-label="Profilo" onClick={() => setPage('settings')}>{initials || '?'}</button>
-        <span style={{ flex: 1 }}>{user?.displayName || user?.email || 'Profilo'}</span>
+        <button className={`profile-trigger${page === 'profile' ? ' active' : ''}`} data-tour="profile" onClick={() => setPage('profile')}>
+          <span className="profile-avatar" aria-hidden="true">{initials || '?'}</span>
+          <span className="profile-copy"><b>{user?.displayName || 'Profilo'}</b><small>{user?.email || 'Modifica profilo'}</small></span>
+        </button>
         <button
           className="icon-btn flat"
           aria-label={t(theme === 'dark' ? 'theme.dark' : 'theme.light')}
