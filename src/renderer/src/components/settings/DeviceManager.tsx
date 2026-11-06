@@ -9,7 +9,7 @@ const statusKey = (status: Device['status']): string => ({ pending: 'set.pending
 
 export const DeviceManager: React.FC = () => {
   const { t, locale } = useT();
-  const { current, devices, loading, error, register, approve, revoke, resetLocalDevice } = useDeviceStore();
+  const { current, devices, loading, error, availability, register, approve, revoke, resetLocalDevice } = useDeviceStore();
   const [name, setName] = useState('');
   const [savingName, setSavingName] = useState(false);
 
@@ -41,7 +41,14 @@ export const DeviceManager: React.FC = () => {
 
   return (
     <Panel title={t('set.devices')} sub={t('set.devicesSub')}>
-      {error && <div className="err">{error}</div>}
+      {availability === 'unavailable' ? (
+        <div className="device-unavailable">
+          <IconDeviceDesktop size={18} />
+          <div><b>Dispositivi non disponibili</b><p>La sincronizzazione dispositivi non è configurata. L'app continua a funzionare sul dispositivo attuale.</p></div>
+          <button className="ghost-btn" onClick={() => void register()}>Riprova</button>
+        </div>
+      ) : <>
+      {error && <div className="notice">Impossibile aggiornare i dispositivi. L'app continua a funzionare.<button className="link-btn" onClick={() => void register()}>Riprova</button></div>}
       {current && (
         <div className="backup" style={{ gap: 12 }}>
           <div className="kv-row">
@@ -75,6 +82,7 @@ export const DeviceManager: React.FC = () => {
           </div>
         ))}
       </div>
+      </>}
     </Panel>
   );
 };

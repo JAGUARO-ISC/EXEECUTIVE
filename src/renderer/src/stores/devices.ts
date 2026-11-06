@@ -18,8 +18,11 @@ export interface Device {
   revoked_at: string | null;
 }
 
+export type DeviceAvailability = 'available' | 'unavailable';
+
 interface DeviceStore {
   current: Device | null;
+  availability: DeviceAvailability;
   devices: Device[];
   loaded: boolean;
   loading: boolean;
@@ -43,6 +46,13 @@ const currentUserId = (): string => {
   return String(user.id);
 };
 
+export const isUnavailableError = (error: unknown): boolean => {
+  const message = typeof error === 'object' && error !== null && 'message' in error
+    ? String((error as { message: unknown }).message)
+    : error instanceof Error ? error.message : String(error);
+  return /public\.devices.*schema cache|relation .*devices.*does not exist/i.test(message);
+};
+
 const errorMessage = (error: unknown): string => {
   const message = safeErrorMessage(error);
   return message === 'Operation failed.' ? 'Errore dispositivi. Riprova.' : message;
@@ -50,6 +60,7 @@ const errorMessage = (error: unknown): string => {
 
 export const useDeviceStore = create<DeviceStore>((set, get) => ({
   current: null,
+  availability: 'available',
   devices: [],
   loaded: false,
   loading: false,
@@ -64,10 +75,14 @@ export const useDeviceStore = create<DeviceStore>((set, get) => ({
       if (error) throw error;
       const devices = (data ?? []) as Device[];
       const current = devices.find((device) => device.user_id === userId && device.device_key === deviceKey) ?? null;
-      set({ devices, current, loaded: true, loading: false });
+      set({ devices, current, loaded: true, loading: false, availability: 'available', error: null });
       if (current?.status === 'revoked' || current?.revoked_at) await useAuth.getState().logout();
     } catch (error) {
-      set({ loaded: true, loading: false, error: errorMessage(error) });
+      if (isUnavailableError(error)) {
+        set({ loaded: true, loading: false, availability: 'unavailable', error: null, current: null, devices: [] });
+      } else {
+        set({ loaded: true, loading: false, availability: 'available', error: errorMessage(error) });
+      }
     }
   },
 
@@ -88,7 +103,11 @@ export const useDeviceStore = create<DeviceStore>((set, get) => ({
       if (error) throw error;
       await get().load();
     } catch (error) {
-      set({ loading: false, error: errorMessage(error) });
+      if (isUnavailableError(error)) {
+        set({ loading: false, availability: 'unavailable', error: null, current: null, devices: [] });
+      } else {
+        set({ loading: false, availability: 'available', error: errorMessage(error) });
+      }
     }
   },
 

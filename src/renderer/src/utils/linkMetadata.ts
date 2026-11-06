@@ -6,6 +6,23 @@ export interface LinkMetadata {
   icon: string;
 }
 
+export interface LinkPreview {
+  label: string;
+  hostname: string;
+  imageUrl: string;
+}
+
+export function getLinkPreview(value: string): LinkPreview | null {
+  try {
+    const url = new URL(value.trim());
+    if (!['https:', 'http:'].includes(url.protocol)) return null;
+    const hostname = url.hostname.toLowerCase();
+    return { label: hostname, hostname, imageUrl: `https://www.google.com/s2/favicons?domain=${encodeURIComponent(hostname)}&sz=64` };
+  } catch {
+    return null;
+  }
+}
+
 export function detectLinkMetadata(value: string): LinkMetadata | null {
   try {
     const url = new URL(value.trim());

@@ -8,7 +8,7 @@ const steps: readonly [string, string, string, Page][] = [
   ['Nuovo', 'Aggiungi appuntamenti, attività, movimenti e note.', '[data-tour="quick-add"]', 'dashboard'],
   ['Calendario', 'Organizza riunioni, promemoria e link.', '[data-tour="calendar"]', 'calendar'],
   ['Finanze', 'Controlla entrate, uscite e andamento.', '[data-tour="finance"]', 'finance'],
-  ['Impostazioni', 'Gestisci lingua, valuta, backup e profilo.', '[data-tour="settings"]', 'settings'],
+  ['Profilo', 'Apri il tuo profilo dal basso a sinistra per modificare nome e identità.', '[data-tour="profile"]', 'profile'],
   ['Notifiche', 'Prova il test notifiche per verificare i promemoria.', '[data-tour="notifications"]', 'settings'],
 ];
 

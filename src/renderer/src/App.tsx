@@ -21,6 +21,7 @@ import { SettingsPage } from './components/settings/SettingsPage';
 import { PageStage } from './components/layout/PageStage';
 import { WelcomeIntro } from './components/onboarding/WelcomeIntro';
 import { ProductTour } from './components/onboarding/ProductTour';
+import { ProfileSettings } from './components/profile/ProfileSettings';
 import { useTutorialStore } from './stores/tutorial';
 
 const App: React.FC = () => {
@@ -154,6 +155,7 @@ const App: React.FC = () => {
               {p === 'advisor' && <AdvisorPage />}
               {p === 'stats' && <StatsPage />}
               {p === 'notes' && <NotesPage />}
+              {p === 'profile' && <ProfileSettings />}
               {p === 'settings' && <SettingsPage />}
             </>
           )}
