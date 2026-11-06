@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { IconArrowRight, IconCheck, IconPlus } from '@tabler/icons-react';
+import { IconArrowRight, IconCheck, IconExternalLink, IconPlus } from '@tabler/icons-react';
 import { toggleTask, useAppointmentStore, useGoalStore, useTaskStore } from '../../stores';
 import { quick, useUi } from '../../stores/ui';
 import { addDays, CATEGORY_COLORS, dateKey, expandOccurrences, formatTime, startOfDay } from '../../utils/date';
@@ -81,8 +81,8 @@ export const DashboardPage: React.FC = () => {
                 <AreaChart data={series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="bal" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#ff6f1a" stopOpacity={0.35} />
-                      <stop offset="100%" stopColor="#ff6f1a" stopOpacity={0} />
+                      <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.18} />
+                      <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid stroke="#23252f" vertical={false} />
@@ -110,6 +110,7 @@ export const DashboardPage: React.FC = () => {
                     {o.source.description && <small className="appointment-description">{o.source.description}</small>}
                     {o.source.link && getLinkPreview(o.source.link) && <small className="appointment-link">{getLinkPreview(o.source.link)?.label}</small>}
                   </span>
+                  {o.source.link && getLinkPreview(o.source.link) && <a className="appointment-external" href={o.source.link} target="_blank" rel="noreferrer" aria-label={`Apri ${getLinkPreview(o.source.link)?.label}`} onClick={(event) => event.stopPropagation()}><IconExternalLink size={15} /></a>}
                   {o.source.link && getLinkPreview(o.source.link) && <img className="appointment-favicon" src={getLinkPreview(o.source.link)?.imageUrl} alt="" />}
                 </button>
               ))}
@@ -133,6 +134,7 @@ export const DashboardPage: React.FC = () => {
                     {o.source.description && <small className="appointment-description">{o.source.description}</small>}
                     {o.source.link && getLinkPreview(o.source.link) && <small className="appointment-link">{getLinkPreview(o.source.link)?.label}</small>}
                   </span>
+                  {o.source.link && getLinkPreview(o.source.link) && <a className="appointment-external" href={o.source.link} target="_blank" rel="noreferrer" aria-label={`Apri ${getLinkPreview(o.source.link)?.label}`} onClick={(event) => event.stopPropagation()}><IconExternalLink size={15} /></a>}
                   {o.source.link && getLinkPreview(o.source.link) && <img className="appointment-favicon" src={getLinkPreview(o.source.link)?.imageUrl} alt="" />}
                 </button>
               ))}

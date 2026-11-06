@@ -46,9 +46,11 @@ const currentUserId = (): string => {
   return String(user.id);
 };
 
-const isUnavailableError = (error: unknown): boolean => {
-  const message = error instanceof Error ? error.message : String(error);
-  return /public\\.devices.*schema cache|relation .*devices.*does not exist/i.test(message);
+export const isUnavailableError = (error: unknown): boolean => {
+  const message = typeof error === 'object' && error !== null && 'message' in error
+    ? String((error as { message: unknown }).message)
+    : error instanceof Error ? error.message : String(error);
+  return /public\.devices.*schema cache|relation .*devices.*does not exist/i.test(message);
 };
 
 const errorMessage = (error: unknown): string => {
@@ -73,7 +75,7 @@ export const useDeviceStore = create<DeviceStore>((set, get) => ({
       if (error) throw error;
       const devices = (data ?? []) as Device[];
       const current = devices.find((device) => device.user_id === userId && device.device_key === deviceKey) ?? null;
-      set({ devices, current, loaded: true, loading: false });
+      set({ devices, current, loaded: true, loading: false, availability: 'available', error: null });
       if (current?.status === 'revoked' || current?.revoked_at) await useAuth.getState().logout();
     } catch (error) {
       if (isUnavailableError(error)) {

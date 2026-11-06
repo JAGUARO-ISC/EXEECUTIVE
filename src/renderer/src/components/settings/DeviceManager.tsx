@@ -48,7 +48,7 @@ export const DeviceManager: React.FC = () => {
           <button className="ghost-btn" onClick={() => void register()}>Riprova</button>
         </div>
       ) : <>
-      {error && <div className="notice">{error}<button className="link-btn" onClick={() => void register()}>Riprova</button></div>}
+      {error && <div className="notice">Impossibile aggiornare i dispositivi. L'app continua a funzionare.<button className="link-btn" onClick={() => void register()}>Riprova</button></div>}
       {current && (
         <div className="backup" style={{ gap: 12 }}>
           <div className="kv-row">
