@@ -32,9 +32,11 @@ export const ProductTour: React.FC = () => {
       setSpotlight({ top: rect.top - 8, left: rect.left - 8, width: rect.width + 16, height: rect.height + 16 });
     };
     update();
+    const delayedUpdate = window.setTimeout(update, 80);
     window.addEventListener('resize', update);
     window.addEventListener('scroll', update, true);
     return () => {
+      window.clearTimeout(delayedUpdate);
       window.removeEventListener('resize', update);
       window.removeEventListener('scroll', update, true);
     };

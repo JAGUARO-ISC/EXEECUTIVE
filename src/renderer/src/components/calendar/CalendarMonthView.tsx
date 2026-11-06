@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import type { Appointment } from '../../types';
 import { addDays, CATEGORY_COLORS, dateKey, expandOccurrences, isSameDay, occurrencesOnDay, startOfWeek } from '../../utils/date';
+import { getLinkPreview } from '../../utils/linkMetadata';
 
 interface Props {
   date: Date;
@@ -56,7 +57,9 @@ export const CalendarMonthView: React.FC<Props> = ({ date, appointments, onDateC
                     onEditAppointment(o.source);
                   }}
                 >
-                  {o.title}
+                  <span className="chip-title">{o.title}</span>
+                  {o.source.description && <span className="chip-description">{o.source.description.slice(0, 44)}</span>}
+                  {o.source.link && <span className="chip-provider">{getLinkPreview(o.source.link)?.label ?? 'Link'}</span>}
                 </button>
               ))}
               {items.length > 3 && <span className="more">+{items.length - 3} altri</span>}

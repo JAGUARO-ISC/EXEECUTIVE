@@ -194,7 +194,7 @@ h1, h2, h3, h4, .display {
   font-size: 11px; font-weight: 600; color: var(--text); cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   background: color-mix(in srgb, var(--c) 28%, #14151b);
   box-shadow: inset 2px 0 0 var(--c);
-}
+}.chip-title,.chip-description,.chip-provider{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.chip-description{font-weight:400;color:var(--muted);font-size:10px}.chip-provider{font-size:10px;color:var(--accent);font-weight:500}
 .more { font-size: 11px; color: var(--muted); padding-left: 4px; }
 
 /* ---------- month ---------- */
