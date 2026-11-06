@@ -2,6 +2,7 @@ export interface Appointment {
   id?: number;
   title: string;
   description?: string | null;
+  link?: string | null;
   startDatetime: string;
   endDatetime: string;
   location?: string | null;

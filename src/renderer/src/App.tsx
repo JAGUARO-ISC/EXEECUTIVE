@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import './components/onboarding/onboarding.css';
 import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import { useGoalStore, useNoteStore, useTaskStore, useTxStore } from './stores';
@@ -18,6 +19,9 @@ import { StatsPage } from './components/stats/StatsPage';
 import { NotesPage } from './components/notes/NotesPage';
 import { SettingsPage } from './components/settings/SettingsPage';
 import { PageStage } from './components/layout/PageStage';
+import { WelcomeIntro } from './components/onboarding/WelcomeIntro';
+import { ProductTour } from './components/onboarding/ProductTour';
+import { useTutorialStore } from './stores/tutorial';
 
 const App: React.FC = () => {
   const page = useUi((s) => s.page);
@@ -27,6 +31,18 @@ const App: React.FC = () => {
   const settingsLoaded = useSettings((s) => s.loaded);
   const lang = useSettings((s) => s.lang);
   const { user, loaded: authLoaded } = useAuth((s) => ({ user: s.user, loaded: s.loaded }));
+  const tutorialStatus = useTutorialStore((s) => s.status);
+  const prepareTutorial = useTutorialStore((s) => s.prepare);
+  const startTutorial = useTutorialStore((s) => s.start);
+  const skipTutorial = useTutorialStore((s) => s.skip);
+  const [showIntro, setShowIntro] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      prepareTutorial(user.id);
+      try { setShowIntro(!localStorage.getItem(`exec_intro:${user.id}`)); } catch { setShowIntro(false); }
+    }
+  }, [user, prepareTutorial]);
 
   useEffect(() => {
     void useAuth.getState().load();
@@ -106,6 +122,11 @@ const App: React.FC = () => {
 
   if (!user) return <AuthPage />;
 
+  if (showIntro) return <WelcomeIntro
+    onStart={() => { try { localStorage.setItem(`exec_intro:${user.id}`, '1'); } catch { /* ignore */ } setShowIntro(false); startTutorial(user.id); }}
+    onSkip={() => { try { localStorage.setItem(`exec_intro:${user.id}`, '1'); } catch { /* ignore */ } setShowIntro(false); skipTutorial(); }}
+  />;
+
   return (
     <div className="app">
       <Sidebar />
@@ -139,6 +160,7 @@ const App: React.FC = () => {
         />
       )}
       <ModalHost />
+      {tutorialStatus === 'running' && <ProductTour />}
     </div>
   );
 };

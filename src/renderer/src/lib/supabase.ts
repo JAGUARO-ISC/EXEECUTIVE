@@ -1,4 +1,5 @@
 import { runtimeConfig } from './runtimeConfig';
+import { errorMessage } from '../utils/errorMessage';
 
 export type SupabaseUser = {
   id: string;
@@ -29,24 +30,34 @@ type DeviceQuery = {
 };
 
 const SESSION_KEY = 'exec_supabase_session';
+const SESSION_ONLY_KEY = 'exec_supabase_session_tab';
+let persistentSession = false;
+
+export const setSessionPersistence = (remember: boolean): void => { persistentSession = remember; };
+
+export const hasPersistentSession = (): boolean => {
+  try { return !!localStorage.getItem(SESSION_KEY); } catch { return false; }
+};
 
 const createClient = (url: string, anonKey: string) => {
   let callback: AuthChangeCallback | null = null;
 
   const readSession = (): SupabaseSession | null => {
     try {
-      const raw = localStorage.getItem(SESSION_KEY);
+      const raw = (persistentSession ? localStorage : sessionStorage).getItem(persistentSession ? SESSION_KEY : SESSION_ONLY_KEY);
       if (!raw) return null;
       return JSON.parse(raw) as SupabaseSession;
     } catch {
-      localStorage.removeItem(SESSION_KEY);
+      (persistentSession ? localStorage : sessionStorage).removeItem(persistentSession ? SESSION_KEY : SESSION_ONLY_KEY);
       return null;
     }
   };
 
   const writeSession = (session: SupabaseSession | null): void => {
-    if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    else localStorage.removeItem(SESSION_KEY);
+    const storage = persistentSession ? localStorage : sessionStorage;
+    const key = persistentSession ? SESSION_KEY : SESSION_ONLY_KEY;
+    if (session) storage.setItem(key, JSON.stringify(session));
+    else storage.removeItem(key);
     callback?.(session ? 'SIGNED_IN' : 'SIGNED_OUT', session);
   };
 
@@ -65,7 +76,7 @@ const createClient = (url: string, anonKey: string) => {
       if (!response.ok) return { data: null, error: { message: payload.error_description ?? payload.msg ?? payload.message ?? `HTTP ${response.status}` } };
       return { data: payload as T, error: null };
     } catch (error) {
-      return { data: null, error: { message: error instanceof Error ? error.message : String(error) } };
+      return { data: null, error: { message: errorMessage(error) } };
     }
   };
 
@@ -102,7 +113,7 @@ const createClient = (url: string, anonKey: string) => {
         const data = await response.json().catch(() => null);
         return response.ok ? { data, error: null } : { data: null, error: { message: data?.message ?? `HTTP ${response.status}` } };
       } catch (error) {
-        return { data: null, error: { message: error instanceof Error ? error.message : String(error) } };
+        return { data: null, error: { message: errorMessage(error) } };
       }
     };
     return query;
@@ -129,6 +140,7 @@ const createClient = (url: string, anonKey: string) => {
         return { data: { session: result.data?.access_token ? result.data : null, user: result.data?.user ?? null }, error: null };
       },
       resetPasswordForEmail: (email: string) => request<Record<string, never>>('/auth/v1/recover', { email }),
+      resend: (options: { type: 'signup'; email: string }) => request<Record<string, never>>('/auth/v1/resend', options),
       signOut: async () => {
         const session = readSession();
         const result = await request<Record<string, never>>('/auth/v1/logout', undefined, session?.access_token);

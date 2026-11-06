@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { invoke } from '@tauri-apps/api/core';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './auth';
+import { errorMessage as safeErrorMessage } from '../utils/errorMessage';
 
 export type DeviceStatus = 'pending' | 'approved' | 'revoked';
 
@@ -43,13 +44,8 @@ const currentUserId = (): string => {
 };
 
 const errorMessage = (error: unknown): string => {
-  if (error instanceof Error) return error.message;
-  if (typeof error === 'string') return error;
-  if (typeof error === 'object' && error !== null && 'message' in error) {
-    const message = (error as { message?: unknown }).message;
-    if (typeof message === 'string') return message;
-  }
-  return 'Errore dispositivi. Riprova.';
+  const message = safeErrorMessage(error);
+  return message === 'Operation failed.' ? 'Errore dispositivi. Riprova.' : message;
 };
 
 export const useDeviceStore = create<DeviceStore>((set, get) => ({
@@ -92,7 +88,7 @@ export const useDeviceStore = create<DeviceStore>((set, get) => ({
       if (error) throw error;
       await get().load();
     } catch (error) {
-      set({ loading: false, error: error instanceof Error ? error.message : String(error) });
+      set({ loading: false, error: errorMessage(error) });
     }
   },
 

@@ -4,7 +4,6 @@ import {
   IconCalendar,
   IconCalendarPlus,
   IconBulb,
-  IconCash,
   IconChartBar,
   IconChecklist,
   IconLayoutDashboard,
@@ -42,6 +41,8 @@ export const Sidebar: React.FC = () => {
   const setPage = useUi((s) => s.setPage);
   const tasks = useTaskStore((s) => s.items);
   const { theme, toggleTheme } = useTheme();
+  const user = useAuth((s) => s.user);
+  const initials = (user?.displayName ?? user?.email ?? '?').split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
   const overdue = useMemo(() => {
     const today = dateKey(new Date());
     return tasks.filter((t) => t.status !== 'done' && t.dueDate && t.dueDate < today).length;
@@ -56,7 +57,7 @@ export const Sidebar: React.FC = () => {
 
       <Menu position="bottom-start" width={220} shadow="md">
         <Menu.Target>
-          <button className="new-btn" data-testid="quick-add">
+          <button className="new-btn" data-testid="quick-add" data-tour="quick-add">
             <IconPlus size={18} stroke={2.5} />
             {t('quick.new')}
           </button>
@@ -83,7 +84,7 @@ export const Sidebar: React.FC = () => {
       <nav className="nav-list" aria-label={t('nav.sections')}>
         <span className="nav-indicator" style={{ ['--i' as string]: Math.max(0, NAV.findIndex((n) => n.page === page)) }} aria-hidden />
         {NAV.map(({ page: p, key, icon: Icon }) => (
-          <button key={p} className={`nav-item${page === p ? ' active' : ''}`} aria-current={page === p ? 'page' : undefined} onClick={() => setPage(p)}>
+          <button key={p} data-tour={p} className={`nav-item${page === p ? ' active' : ''}`} aria-current={page === p ? 'page' : undefined} onClick={() => setPage(p)}>
             <Icon size={19} stroke={1.7} />
             <span>{t(key)}</span>
             {p === 'tasks' && overdue > 0 && <em className="badge-count" title={t('nav.overdue')}>{overdue}</em>}
@@ -92,8 +93,8 @@ export const Sidebar: React.FC = () => {
       </nav>
 
       <div className="side-foot">
-        <IconCash size={16} />
-        <span style={{ flex: 1 }}>{t('nav.localData')}</span>
+        <button className="profile-avatar" aria-label="Profilo" onClick={() => setPage('settings')}>{initials || '?'}</button>
+        <span style={{ flex: 1 }}>{user?.displayName || user?.email || 'Profilo'}</span>
         <button
           className="icon-btn flat"
           aria-label={t(theme === 'dark' ? 'theme.dark' : 'theme.light')}

@@ -62,7 +62,7 @@ export const DashboardPage: React.FC = () => {
         <button className="ghost-btn" onClick={quick.income}>{t('quick.income')}</button>
       </PageHead>
 
-      <div className="grid-4">
+      <div className="grid-4" data-tour="dashboard">
         <Stat tone="accent" label={t('dash.balance')} value={fmt(month.net)} rawValue={month.net / 100} hint={<Delta current={month.net} previous={prev.net} />} />
         <Stat label={t('dash.income')} value={fmt(month.income)} rawValue={month.income / 100} hint={<Delta current={month.income} previous={prev.income} />} />
         <Stat label={t('dash.expense')} value={fmt(month.expense)} rawValue={month.expense / 100} hint={<Delta current={month.expense} previous={prev.expense} goodWhenUp={false} />} />

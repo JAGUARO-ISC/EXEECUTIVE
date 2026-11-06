@@ -91,6 +91,6 @@ export const monthlySeries = (tx: Transaction[], year: number): MonthPoint[] => 
   return out;
 };
 
-/** Percent change from previous to current. null when there is no baseline. */
-export const pctChange = (current: number, previous: number): number | null =>
-  previous === 0 ? null : ((current - previous) / previous) * 100;
+/** Percent change from previous to current. A new positive balance is shown as a full increase. */
+export const pctChange = (current: number, previous: number): number =>
+  previous === 0 ? (current === 0 ? 0 : current > 0 ? 100 : -100) : ((current - previous) / Math.abs(previous)) * 100;

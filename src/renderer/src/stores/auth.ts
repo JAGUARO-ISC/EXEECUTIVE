@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { invoke } from '@tauri-apps/api/core';
-import { supabase, supabaseConfigured, type SupabaseSession, type SupabaseUser } from '../lib/supabase';
+import { hasPersistentSession, setSessionPersistence, supabase, supabaseConfigured, type SupabaseSession, type SupabaseUser } from '../lib/supabase';
 
 export interface AuthUser {
   id: string;
@@ -13,9 +13,11 @@ interface AuthStore {
   session: SupabaseSession | null;
   loaded: boolean;
   pendingError: string | null;
+  resendAvailableAt: number;
   load: () => Promise<void>;
-  login: (email: string, password: string) => Promise<string | null>;
-  register: (email: string, password: string, displayName: string) => Promise<string | null>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<string | null>;
+  register: (email: string, password: string, firstName: string, lastName?: string, rememberMe?: boolean) => Promise<string | null>;
+  resendConfirmation: (email: string) => Promise<string | null>;
   requestRecovery: (email: string) => Promise<string | null>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
@@ -24,14 +26,27 @@ interface AuthStore {
 const SESSION_METADATA_KEY = 'exec_supabase_user_metadata';
 const CONFIG_ERROR = 'Supabase configuration is missing or invalid.';
 
-const errorMessage = (error: unknown): string => {
-  if (typeof error === 'string') return error;
-  if (error instanceof Error) return error.message;
+export const errorMessage = (error: unknown): string => {
+  if (typeof error === 'string' && error.trim()) return error;
+  if (error instanceof Error && error.message.trim()) return error.message;
   if (typeof error === 'object' && error !== null && 'message' in error) {
     const message = (error as { message?: unknown }).message;
-    if (typeof message === 'string') return message;
+    if (typeof message === 'string' && message.trim()) return message;
   }
-  return String(error);
+  return 'Authentication failed.';
+};
+
+const RESEND_COOLDOWN_MS = 60_000;
+const resendKey = (email: string) => `exec_resend_available_at:${email.trim().toLowerCase()}`;
+
+const rememberSession = (rememberMe: boolean): void => {
+  try {
+    setSessionPersistence(rememberMe);
+    localStorage.setItem('exec_remember_me', rememberMe ? '1' : '0');
+    if (!rememberMe) localStorage.removeItem('exec_supabase_session');
+  } catch {
+    // Storage can be unavailable in restricted windows.
+  }
 };
 
 const toAuthUser = (user: SupabaseUser | null): AuthUser | null => user
@@ -58,6 +73,7 @@ const clearLocalMetadata = (): void => {
   try {
     localStorage.removeItem(SESSION_METADATA_KEY);
     localStorage.removeItem('exec_supabase_session');
+    sessionStorage.removeItem('exec_supabase_session_tab');
   } catch {
     // Browser storage can be unavailable in private or restricted windows.
   }
@@ -91,9 +107,14 @@ export const useAuth = create<AuthStore>((set) => ({
   session: null,
   loaded: false,
   pendingError: null,
+  resendAvailableAt: 0,
 
   load: async () => {
     clearMalformedMetadata();
+    try {
+      const preference = localStorage.getItem('exec_remember_me');
+      setSessionPersistence(preference === '1' || (preference === null && hasPersistentSession()));
+    } catch { setSessionPersistence(false); }
     if (!supabaseConfigured || !supabase) {
       set({ loaded: true, pendingError: CONFIG_ERROR });
       return;
@@ -114,15 +135,17 @@ export const useAuth = create<AuthStore>((set) => ({
     }
   },
 
-  login: async (email, password) => {
+  login: async (email, password, rememberMe = false) => {
     if (!supabaseConfigured || !supabase) {
       const message = CONFIG_ERROR;
       set({ loaded: true, pendingError: message });
       return message;
     }
     try {
+      rememberSession(rememberMe);
       const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (error) throw error;
+      rememberSession(rememberMe);
       applySession(data.session, set);
       set({ loaded: true });
       return null;
@@ -133,25 +156,55 @@ export const useAuth = create<AuthStore>((set) => ({
     }
   },
 
-  register: async (email, password, displayName) => {
+  register: async (email, password, firstName, lastName = '', rememberMe = false) => {
+    if (!firstName.trim() || !lastName.trim()) {
+      const message = 'First name and last name are required.';
+      set({ pendingError: message, loaded: true });
+      return message;
+    }
     if (!supabaseConfigured || !supabase) {
       const message = CONFIG_ERROR;
       set({ loaded: true, pendingError: message });
       return message;
     }
     try {
+      rememberSession(rememberMe);
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
-        options: { data: { display_name: displayName.trim() } },
+        options: { data: { first_name: firstName.trim(), last_name: lastName.trim(), display_name: `${firstName.trim()} ${lastName.trim()}` } },
       });
       if (error) throw error;
+      rememberSession(rememberMe);
       applySession(data.session, set);
       set({ loaded: true });
-      return data.session ? null : 'Check your email to confirm your account.';
+      return null;
     } catch (error) {
       const message = errorMessage(error);
       set({ pendingError: message, loaded: true });
+      return message;
+    }
+  },
+
+  resendConfirmation: async (email) => {
+    if (!supabaseConfigured || !supabase) return CONFIG_ERROR;
+    const key = resendKey(email);
+    let availableAt = 0;
+    try { availableAt = Number(localStorage.getItem(key) ?? 0); } catch { /* ignore */ }
+    if (Date.now() < availableAt) {
+      set({ resendAvailableAt: availableAt });
+      return 'Please wait before requesting another email.';
+    }
+    try {
+      const { error } = await supabase.auth.resend({ type: 'signup', email: email.trim() });
+      if (error) throw error;
+      const next = Date.now() + RESEND_COOLDOWN_MS;
+      try { localStorage.setItem(key, String(next)); } catch { /* ignore */ }
+      set({ resendAvailableAt: next, pendingError: null });
+      return null;
+    } catch (error) {
+      const message = errorMessage(error);
+      set({ pendingError: message });
       return message;
     }
   },

@@ -10,6 +10,8 @@ import { PageHead, Panel } from '../common/ui';
 import { DeviceManager } from './DeviceManager';
 import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
+import { ProfileSettings } from '../profile/ProfileSettings';
+import { useTutorialStore } from '../../stores/tutorial';
 
 const ACCENT_NAMES: AccentName[] = ['orange', 'lime', 'blue', 'violet', 'red'];
 
@@ -76,6 +78,7 @@ export const SettingsPage: React.FC = () => {
   const [q, setQ] = useState('');
   const [updateBusy, setUpdateBusy] = useState(false);
   const [updateMessage, setUpdateMessage] = useState('');
+  const restartTutorial = useTutorialStore((state) => state.restart);
 
   const checkForUpdate = async () => {
     setUpdateBusy(true);
@@ -142,6 +145,12 @@ export const SettingsPage: React.FC = () => {
       <PageHead title={t('set.title')} sub={t('set.sub')} />
       {error && <div className="err">{error}</div>}
 
+      <ProfileSettings />
+      <Panel title="Tutorial" sub="Rivedi la guida interattiva di EXEECUTIVE">
+        <div className="backup">
+          <button className="ghost-btn" onClick={restartTutorial}>Ripeti tutorial</button>
+        </div>
+      </Panel>
       <DeviceManager />
 
       <Panel title="Aggiornamenti" sub="Mantieni EXEECUTIVE aggiornato">
@@ -213,7 +222,7 @@ export const SettingsPage: React.FC = () => {
       <Panel title={t('set.reminders')} sub={t('set.remindersSub')}>
         <div className="backup">
           <p className="muted" style={{ margin: 0, fontSize: 14 }}>{t('set.remindersText')}</p>
-          <button className="ghost-btn" onClick={() => void invoke('show_notification', { title: 'EXEECUTIVE', body: t('set.notifTestBody') })}>
+          <button data-tour="notifications" className="ghost-btn" onClick={() => void invoke('show_notification', { title: 'EXEECUTIVE', body: t('set.notifTestBody') })}>
             <IconBell size={15} /> {t('set.notifTest')}
           </button>
         </div>

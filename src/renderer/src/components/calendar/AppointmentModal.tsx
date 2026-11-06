@@ -6,6 +6,7 @@ import { notifications } from '@mantine/notifications';
 import { useAppointmentStore } from '../../stores';
 import { ConfirmButton } from '../common/ConfirmButton';
 import type { Appointment } from '../../types';
+import { detectLinkMetadata } from '../../utils/linkMetadata';
 
 interface Props {
   opened: boolean;
@@ -27,6 +28,7 @@ const recurrenceOptions = [['daily','Ogni giorno'],['weekly','Ogni settimana'],[
 interface FormValues {
   title: string;
   description: string;
+  link: string;
   startDatetime: Date;
   endDatetime: Date;
   location: string;
@@ -42,6 +44,7 @@ interface FormValues {
 const defaults = (start: Date): FormValues => ({
   title: '',
   description: '',
+  link: '',
   startDatetime: start,
   endDatetime: new Date(start.getTime() + 3600000),
   location: '',
@@ -74,6 +77,7 @@ export const AppointmentModal: React.FC<Props> = ({ opened, onClose, appointment
       form.setValues({
         title: appointment.title,
         description: appointment.description ?? '',
+        link: appointment.link ?? '',
         startDatetime: new Date(appointment.startDatetime),
         endDatetime: new Date(appointment.endDatetime),
         location: appointment.location ?? '',
@@ -96,7 +100,8 @@ export const AppointmentModal: React.FC<Props> = ({ opened, onClose, appointment
   const submit = async (v: FormValues) => {
     const payload: Omit<Appointment, 'id'> = {
       title: v.title.trim(),
-      description: v.description || null,
+      description: v.description.trim() || null,
+      link: v.link.trim() ? (detectLinkMetadata(v.link.trim()) ? v.link.trim() : null) : null,
       startDatetime: v.startDatetime.toISOString(),
       endDatetime: v.endDatetime.toISOString(),
       location: v.location || null,
@@ -140,6 +145,7 @@ export const AppointmentModal: React.FC<Props> = ({ opened, onClose, appointment
           {error && <Alert color="red">{error}</Alert>}
           <TextInput label="Titolo" placeholder="Riunione con cliente" data-autofocus {...form.getInputProps('title')} />
           <Textarea label="Descrizione" rows={3} {...form.getInputProps('description')} />
+          <TextInput label="Link" placeholder="https://meet.google.com/..." {...form.getInputProps('link')} />
           <Group grow align="flex-start">
             <DateTimePicker label="Inizio" valueFormat="DD MMM YYYY HH:mm" {...form.getInputProps('startDatetime')} />
             <DateTimePicker label="Fine" valueFormat="DD MMM YYYY HH:mm" {...form.getInputProps('endDatetime')} />

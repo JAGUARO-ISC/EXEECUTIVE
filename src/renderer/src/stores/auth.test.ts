@@ -7,6 +7,7 @@ const authApi = vi.hoisted(() => {
     signInWithPassword: vi.fn(),
     signUp: vi.fn(),
     resetPasswordForEmail: vi.fn(),
+    resend: vi.fn(),
     signOut: vi.fn(),
   };
   return { ...api, auth: api };
@@ -15,6 +16,8 @@ const supabaseConfig = vi.hoisted(() => ({ configured: true }));
 
 vi.mock('../lib/supabase', () => ({
   supabase: authApi,
+  setSessionPersistence: vi.fn(),
+  hasPersistentSession: vi.fn(() => false),
   get supabaseConfigured() { return supabaseConfig.configured; },
 }));
 
@@ -32,7 +35,9 @@ const localStorageMock = {
   setItem: (key: string, value: string) => storage.set(key, value),
   removeItem: (key: string) => storage.delete(key),
 };
+const sessionStorageMock = { ...localStorageMock };
 vi.stubGlobal('localStorage', localStorageMock);
+vi.stubGlobal('sessionStorage', sessionStorageMock);
 
 const resetStore = () => {
   useAuth.setState({ user: null, session: null, loaded: false, pendingError: null });
@@ -58,8 +63,10 @@ describe('useAuth', () => {
     expect(useAuth.getState().loaded).toBe(true);
   });
 
-  it('clears session and local sync state on logout', async () => {
+  it('clears persistent and tab sessions on logout', async () => {
     authApi.signOut.mockResolvedValue({ error: null });
+    localStorage.setItem('exec_supabase_session', '{"access_token":"persistent"}');
+    sessionStorage.setItem('exec_supabase_session_tab', '{"access_token":"tab"}');
     useAuth.setState({ user: { id: 'user-1', email: 'user@example.com', displayName: 'User' }, session: { access_token: 'token' } as never, loaded: true, pendingError: null });
 
     await useAuth.getState().logout();
@@ -68,6 +75,8 @@ describe('useAuth', () => {
     expect(invoke).toHaveBeenCalledWith('clear_session_state');
     expect(useAuth.getState().user).toBeNull();
     expect(useAuth.getState().session).toBeNull();
+    expect(localStorage.getItem('exec_supabase_session')).toBeNull();
+    expect(sessionStorage.getItem('exec_supabase_session_tab')).toBeNull();
   });
 
   it('clears malformed stored session and reports loaded state', async () => {
@@ -88,6 +97,42 @@ describe('useAuth', () => {
 
     expect(result).toBe('SMTP is not configured');
     expect(useAuth.getState().pendingError).toBe('SMTP is not configured');
+  });
+
+  it('normalizes object-shaped errors without rendering object stringification', async () => {
+    authApi.signInWithPassword.mockResolvedValue({ error: { code: 'invalid' } });
+
+    const result = await useAuth.getState().login('user@example.com', 'password');
+
+    expect(result).toBe('Authentication failed.');
+    expect(result).not.toContain('[object Object]');
+  });
+
+  it('resends confirmation and enforces a 60-second cooldown', async () => {
+    authApi.resend.mockResolvedValue({ data: {}, error: null });
+    const now = vi.spyOn(Date, 'now').mockReturnValue(1_000);
+
+    expect(await useAuth.getState().resendConfirmation('user@example.com')).toBeNull();
+    expect(authApi.resend).toHaveBeenCalledWith({ type: 'signup', email: 'user@example.com' });
+    expect(useAuth.getState().resendAvailableAt).toBe(61_000);
+    expect(await useAuth.getState().resendConfirmation('user@example.com')).toBe('Please wait before requesting another email.');
+    expect(authApi.resend).toHaveBeenCalledOnce();
+    now.mockRestore();
+  });
+
+  it('enters confirmation flow when signup requires email verification', async () => {
+    authApi.signUp.mockResolvedValue({ data: { session: null, user: null }, error: null });
+
+    const result = await useAuth.getState().register('user@example.com', 'password', 'Mario', 'Rossi', false);
+
+    expect(result).toBeNull();
+  });
+
+  it('validates registration names', async () => {
+    const result = await useAuth.getState().register('user@example.com', 'password', '', 'Rossi', false);
+
+    expect(result).toBe('First name and last name are required.');
+    expect(authApi.signUp).not.toHaveBeenCalled();
   });
 });
 

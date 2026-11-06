@@ -3,7 +3,15 @@ import { invoke } from '@tauri-apps/api/core';
 import type { Appointment, Goal, Note, Task, Transaction } from '../types';
 import { enqueueChange } from '../lib/sync';
 
-export const errMsg = (e: unknown): string => (typeof e === 'string' ? e : e instanceof Error ? e.message : String(e));
+export const errMsg = (e: unknown): string => {
+  if (typeof e === 'string' && e.trim()) return e;
+  if (e instanceof Error && e.message.trim()) return e.message;
+  if (typeof e === 'object' && e !== null && 'message' in e) {
+    const message = (e as { message?: unknown }).message;
+    if (typeof message === 'string' && message.trim()) return message;
+  }
+  return 'Operation failed.';
+};
 
 // ------------------------------------------------------------ appointments
 

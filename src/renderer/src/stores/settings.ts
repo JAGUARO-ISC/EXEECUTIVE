@@ -2,8 +2,9 @@ import { create } from 'zustand';
 import { invoke } from '@tauri-apps/api/core';
 import type { Lang } from '../i18n';
 import type { Rates } from '../utils/currency';
+import { errorMessage } from '../utils/errorMessage';
 
-const msg = (e: unknown): string => (typeof e === 'string' ? e : e instanceof Error ? e.message : String(e));
+const msg = errorMessage;
 
 export interface AdvisorInput {
   balance: string; // kept as text so the field can be edited freely

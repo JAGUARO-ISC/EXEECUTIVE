@@ -10,6 +10,8 @@ import {
   layoutLanes,
   occurrencesOnDay,
 } from '../../utils/date';
+import { IconLink, IconVideo } from '@tabler/icons-react';
+import { detectLinkMetadata } from '../../utils/linkMetadata';
 
 interface Props {
   days: Date[];
@@ -86,9 +88,11 @@ export const TimeGrid: React.FC<Props> = ({ days, appointments, onAddAppointment
                   const top = ((s.getTime() - dayStart.getTime()) / 3600000) * HOUR_PX;
                   const height = Math.max(26, ((e.getTime() - s.getTime()) / 3600000) * HOUR_PX - 2);
                   return (
-                    <button
+                    <div
                       key={`${o.id}-${i}`}
                       className="ev"
+                      role="button"
+                      tabIndex={0}
                       style={{
                         ['--c' as string]: o.color || CATEGORY_COLORS[o.category ?? 'other'],
                         top,
@@ -97,11 +101,32 @@ export const TimeGrid: React.FC<Props> = ({ days, appointments, onAddAppointment
                         width: `calc(${100 / n}% - 6px)`,
                       }}
                       onClick={() => onEditAppointment(o.source)}
+                      onKeyDown={(event) => {
+                        if (event.currentTarget !== event.target) return;
+                        if (event.key === 'Enter' || event.key === ' ') onEditAppointment(o.source);
+                      }}
                     >
+                      {o.link && detectLinkMetadata(o.link) && (
+                        <span className="ev-link-icon" aria-label={detectLinkMetadata(o.link)?.label} title={detectLinkMetadata(o.link)?.label}>
+                          {detectLinkMetadata(o.link)?.kind === 'link' ? <IconLink size={13} /> : <IconVideo size={13} />}
+                        </span>
+                      )}
                       <span className="ev-time">{formatRange(o.occurrenceStart, o.occurrenceEnd)}</span>
                       <div className="ev-title">{o.title}</div>
+                      {height > 48 && o.description && <div className="ev-sub">{o.description.slice(0, 90)}</div>}
                       {height > 70 && o.location && <div className="ev-sub">{o.location}</div>}
-                    </button>
+                      {height > 70 && o.link && detectLinkMetadata(o.link) && (
+                        <a
+                          className="ev-sub ev-link-label"
+                          href={o.link}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          {detectLinkMetadata(o.link)?.label}
+                        </a>
+                      )}
+                    </div>
                   );
                 })}
               </div>

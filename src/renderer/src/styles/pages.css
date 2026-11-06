@@ -51,7 +51,7 @@
   .grid-3, .grid-main, .grid-2 { grid-template-columns: 1fr; }
 }
 
-.stat { padding: 18px 20px; border-radius: var(--radius); background: var(--panel); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.stat { padding: 18px 20px; border-radius: var(--radius); background: var(--panel); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .stat-accent { background: var(--accent); border-color: var(--accent); color: #1a0d03; }
 .stat-accent .stat-label, .stat-accent .muted { color: rgba(26, 13, 3, 0.7); }
 .stat-accent .delta.good, .stat-accent .delta.bad { color: #1a0d03; }
@@ -68,7 +68,7 @@
 .delta.bad { color: #fb7185; }
 .delta .muted { font-weight: 500; }
 
-.panel { border-radius: var(--radius); background: var(--panel); border: 1px solid var(--line); min-width: 0; }
+.panel { border-radius: var(--radius); background: var(--panel); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border: 1px solid var(--line); box-shadow: 0 18px 60px rgba(0, 0, 0, 0.16); min-width: 0; }
 .panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 20px 12px; }
 .panel-title { margin: 0; font-size: 16px; font-weight: 700; }
 .panel-sub { margin-top: 2px; font-size: 13px; color: var(--muted); }

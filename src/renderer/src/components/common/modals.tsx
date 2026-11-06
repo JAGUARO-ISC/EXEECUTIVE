@@ -171,7 +171,7 @@ const TransactionModal: React.FC<{ kind: TxKind; transaction: Transaction | null
   const [kind, setKind] = useState<TxKind>(startKind);
   const [currency, setCurrency] = useState<string>(transaction?.currency ?? defaultCurrency);
   const [amount, setAmount] = useState(transaction ? minorToInput(transaction.amountCents, transaction.currency, locale) : '');
-  const [category, setCategory] = useState<string | null>(isCustom ? OTHER : startCat ?? known(startKind)[0]);
+  const [category, setCategory] = useState<string | null>(isCustom ? (startKind === 'income' ? 'Altre entrate' : 'Altro') : startCat ?? known(startKind)[0]);
   const [custom, setCustom] = useState(isCustom ? startCat! : '');
   const [counterparty, setCounterparty] = useState(transaction?.counterparty ?? '');
   const [method, setMethod] = useState<string | null>(transaction?.paymentMethod ?? 'Carta');
@@ -217,13 +217,13 @@ const TransactionModal: React.FC<{ kind: TxKind; transaction: Transaction | null
     void run(() => (transaction?.id ? update(transaction.id, v) : add(v)), kind === 'income' ? t('fin.incomeSaved') : t('fin.expenseSaved'));
   };
 
-  const catData = [...o.cats(known(kind)), { value: OTHER, label: t('fin.otherCat') }];
+  const catData = o.cats(known(kind));
 
   return (
     <form onSubmit={submit}>
       <Stack gap="md">
         {error && <Alert color="red">{error}</Alert>}
-        <SegmentedControl fullWidth value={kind} onChange={changeKind} data={[{ value: 'expense', label: t('fin.expense') }, { value: 'income', label: t('fin.income') }]} />
+        <SegmentedControl data-tour="finance" fullWidth value={kind} onChange={changeKind} data={[{ value: 'expense', label: t('fin.expense') }, { value: 'income', label: t('fin.income') }]} />
         <Group grow align="flex-start" wrap="nowrap">
           <TextInput
             label={t('fin.amount')}

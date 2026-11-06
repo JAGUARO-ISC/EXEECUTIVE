@@ -64,7 +64,7 @@ export const FinancePage: React.FC = () => {
   const countLabel = list.length === 1 ? t('fin.moveOne') : t('fin.moveCount', { n: list.length });
 
   return (
-    <div className="page">
+    <div className="page" data-tour="finance">
       <PageHead title={t('fin.title')} sub={t('fin.sub')}>
         <div className="nav">
           <button className="icon-btn" aria-label={t('common.prevMonth')} onClick={() => setYm(shiftMonth(ym, -1))}><IconChevronLeft size={18} /></button>

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createSupabaseSyncTransport, createSyncEngine, startSyncLoop, stopSyncLoop, type SyncResult } from '../lib/sync';
 import { useDeviceStore } from './devices';
+import { errorMessage } from '../utils/errorMessage';
 
 interface SyncStore {
   running: boolean;
@@ -24,7 +25,7 @@ export const useSyncStore = create<SyncStore>((set) => ({
       startSyncLoop(engine);
       set({ running: true, error: null });
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : String(error), running: false });
+      set({ error: errorMessage(error), running: false });
     }
   },
   syncNow: async () => {
@@ -34,7 +35,7 @@ export const useSyncStore = create<SyncStore>((set) => ({
       set({ lastResult: result, error: null });
       return result;
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : String(error) });
+      set({ error: errorMessage(error) });
       return null;
     }
   },

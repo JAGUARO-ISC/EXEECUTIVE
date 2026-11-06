@@ -10,6 +10,7 @@ static mut DB_CONN: Option<Connection> = None;
 pub fn init_database(db_path: &str) -> Result<()> {
     let conn = Connection::open(db_path)?;
     conn.execute_batch(&create_tables_sql())?;
+    let _ = conn.execute("ALTER TABLE appointments ADD COLUMN link TEXT", []);
     unsafe {
         DB_CONN = Some(conn);
     }
@@ -49,7 +50,8 @@ fn create_tables_sql() -> String {
         recurrence_pattern TEXT,
         recurrence_end TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        link TEXT
     );
 
     CREATE TABLE IF NOT EXISTS tasks (
@@ -162,6 +164,7 @@ pub struct Appointment {
     pub recurrence_end: Option<String>,
     pub created_at: Option<String>,
     pub updated_at: Option<String>,
+    pub link: Option<String>,
 }
 
 #[tauri::command]
@@ -202,6 +205,7 @@ pub fn get_appointments(
             recurrence_end: row.get(12).ok(),
             created_at: row.get(13).ok(),
             updated_at: row.get(14).ok(),
+            link: row.get(15).ok(),
         })
     }).map_err(|e| e.to_string())?;
 
@@ -213,7 +217,7 @@ pub fn create_appointment(appointment: Appointment) -> Result<i64, String> {
     let conn = get_connection().map_err(|e| e.to_string())?;
 
     conn.execute(
-        "INSERT INTO appointments (title, description, start_datetime, end_datetime, location, category, color, priority, reminder_minutes, is_recurring, recurrence_pattern, recurrence_end) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO appointments (title, description, start_datetime, end_datetime, location, category, color, priority, reminder_minutes, is_recurring, recurrence_pattern, recurrence_end, link) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         params![
             appointment.title,
             appointment.description,
@@ -227,6 +231,7 @@ pub fn create_appointment(appointment: Appointment) -> Result<i64, String> {
             appointment.is_recurring,
             appointment.recurrence_pattern,
             appointment.recurrence_end,
+            appointment.link,
         ],
     ).map_err(|e| e.to_string())?;
 
@@ -238,7 +243,7 @@ pub fn update_appointment(id: i64, appointment: Appointment) -> Result<(), Strin
     let conn = get_connection().map_err(|e| e.to_string())?;
 
     conn.execute(
-        "UPDATE appointments SET title = ?, description = ?, start_datetime = ?, end_datetime = ?, location = ?, category = ?, color = ?, priority = ?, reminder_minutes = ?, is_recurring = ?, recurrence_pattern = ?, recurrence_end = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+        "UPDATE appointments SET title = ?, description = ?, start_datetime = ?, end_datetime = ?, location = ?, category = ?, color = ?, priority = ?, reminder_minutes = ?, is_recurring = ?, recurrence_pattern = ?, recurrence_end = ?, link = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
         params![
             appointment.title,
             appointment.description,
@@ -252,6 +257,7 @@ pub fn update_appointment(id: i64, appointment: Appointment) -> Result<(), Strin
             appointment.is_recurring,
             appointment.recurrence_pattern,
             appointment.recurrence_end,
+            appointment.link,
             id,
         ],
     ).map_err(|e| e.to_string())?;
