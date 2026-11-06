@@ -3,21 +3,52 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>EXEECUTIVE — Email confermata</title>
+  <title>EXEECUTIVE — Conferma email</title>
   <style>
     :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #090a0d; color: #f6f7fb; }
     body { min-height: 100vh; display: grid; place-items: center; margin: 0; padding: 24px; }
     main { max-width: 520px; text-align: center; padding: 42px 32px; border: 1px solid #282b34; border-radius: 20px; background: #111319; }
     h1 { margin: 0 0 12px; color: #ff6f1a; }
     p { color: #aeb3c1; line-height: 1.6; }
-    .ok { color: #84cc16; font-size: 48px; margin-bottom: 8px; }
+    .mark { color: #84cc16; font-size: 48px; margin-bottom: 8px; }
+    .error { color: #ff6b6b; }
   </style>
 </head>
 <body>
   <main>
-    <div class="ok" aria-hidden="true">✓</div>
+    <div id="mark" class="mark" aria-hidden="true">…</div>
     <h1>EXEECUTIVE</h1>
-    <p id="message">Email confermata. Puoi tornare all'app e accedere.</p>
+    <p id="message">Verifica della conferma email in corso...</p>
   </main>
+  <script>
+    const SUPABASE_URL = 'https://zljjxcoqptsnnfunzxxo.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_W8wjE5cPHq5sYHjUgwxCqw_BN6SNH0R';
+    const message = document.getElementById('message');
+    const mark = document.getElementById('mark');
+    const params = new URLSearchParams(window.location.hash.slice(1));
+    const accessToken = params.get('access_token');
+
+    async function verifyEmail() {
+      if (!accessToken) throw new Error('Link di conferma mancante o già utilizzato.');
+      const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${accessToken}` }
+      });
+      if (!response.ok) throw new Error('Link di conferma non valido o scaduto.');
+      const user = await response.json();
+      if (!user || !user.id || !user.email_confirmed_at) {
+        throw new Error('Email non ancora confermata da Supabase.');
+      }
+      mark.textContent = '✓';
+      message.textContent = 'Email confermata correttamente. Puoi tornare a EXEECUTIVE e accedere.';
+      history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    verifyEmail().catch((error) => {
+      mark.textContent = '×';
+      mark.classList.add('error');
+      message.textContent = error instanceof Error ? error.message : 'Conferma email non riuscita.';
+      message.classList.add('error');
+    });
+  </script>
 </body>
 </html>
