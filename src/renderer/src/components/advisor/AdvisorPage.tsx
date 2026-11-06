@@ -184,8 +184,8 @@ export const AdvisorPage: React.FC = () => {
         </Panel>
 
         <div className="stack-col">
-          <Stat tone="accent" label={t('adv.runway')} value={plan.months === null ? '–' : t('adv.months', { n: plan.months.toFixed(1) })} hint={<span className="muted">{plan.fundTarget ? `${t('adv.s.fund.t')}: ${money(plan.fundTarget)}` : t('adv.monthlySpendNone')}</span>} />
-          <Stat label={t('adv.ruleOfThumb')} value={rateNow === null ? t('st.na') : `${rateNow}%`} hint={<span className="muted">{rateNow === null ? t('adv.yourSavingNone') : t('adv.yourSaving', { n: rateNow })}. {t('adv.ruleSub')}</span>} />
+          <Stat tone="accent" label={t('adv.runway')} value={plan.months === null ? '–' : t('adv.months', { n: plan.months.toFixed(1) })} rawValue={plan.months ?? undefined} hint={<span className="muted">{plan.fundTarget ? `${t('adv.s.fund.t')}: ${money(plan.fundTarget)}` : t('adv.monthlySpendNone')}</span>} />
+          <Stat label={t('adv.ruleOfThumb')} value={rateNow === null ? t('st.na') : `${rateNow}%`} rawValue={rateNow ?? undefined} hint={<span className="muted">{rateNow === null ? t('adv.yourSavingNone') : t('adv.yourSaving', { n: rateNow })}. {t('adv.ruleSub')}</span>} />
         </div>
       </div>
 
@@ -256,9 +256,9 @@ export const AdvisorPage: React.FC = () => {
         ) : (
           <>
             <div className="grid-3 tight">
-              <Stat label={t('adv.final', { y: years })} value={money(last?.value ?? 0)} />
-              <Stat label={t('adv.contributed')} value={money(last?.contributed ?? 0)} />
-              <Stat tone="good" label={t('adv.earned')} value={money(Math.max(0, (last?.value ?? 0) - (last?.contributed ?? 0)))} />
+              <Stat label={t('adv.final', { y: years })} value={money(last?.value ?? 0)} rawValue={(last?.value ?? 0) / 100} />
+              <Stat label={t('adv.contributed')} value={money(last?.contributed ?? 0)} rawValue={(last?.contributed ?? 0) / 100} />
+              <Stat tone="good" label={t('adv.earned')} value={money(Math.max(0, (last?.value ?? 0) - (last?.contributed ?? 0)))} rawValue={Math.max(0, (last?.value ?? 0) - (last?.contributed ?? 0)) / 100} />
             </div>
             <div className="chart-box">
               <ResponsiveContainer width="100%" height="100%">

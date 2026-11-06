@@ -66,10 +66,11 @@ export const Delta: React.FC<{ current: number; previous: number; goodWhenUp?: b
   if (p === null) return <span className="muted">{t('common.noLastMonth')}</span>;
   const up = p >= 0;
   const good = up === goodWhenUp;
+  const animated = useCountUp(Math.abs(p), 700);
   return (
     <span className={good ? 'delta good' : 'delta bad'}>
       {up ? <IconArrowUpRight size={14} /> : <IconArrowDownRight size={14} />}
-      {Math.abs(p).toFixed(1).replace('.', ',')}% <span className="muted">{suffix ?? t('common.vsLastMonth')}</span>
+      {animated.toFixed(1).replace('.', ',')}% <span className="muted">{suffix ?? t('common.vsLastMonth')}</span>
     </span>
   );
 };

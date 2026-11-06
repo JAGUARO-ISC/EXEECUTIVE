@@ -63,10 +63,10 @@ export const DashboardPage: React.FC = () => {
       </PageHead>
 
       <div className="grid-4">
-        <Stat tone="accent" label={t('dash.balance')} value={fmt(month.net)} rawValue={month.net} hint={<Delta current={month.net} previous={prev.net} />} />
-        <Stat label={t('dash.income')} value={fmt(month.income)} rawValue={month.income} hint={<Delta current={month.income} previous={prev.income} />} />
-        <Stat label={t('dash.expense')} value={fmt(month.expense)} rawValue={month.expense} hint={<Delta current={month.expense} previous={prev.expense} goodWhenUp={false} />} />
-        <Stat label={t('dash.today')} value={fmt(day.net)} rawValue={day.net} hint={<span className="muted">{t('dash.todayLine', { in: fmt(day.income), out: fmt(day.expense) })}</span>} />
+        <Stat tone="accent" label={t('dash.balance')} value={fmt(month.net)} rawValue={month.net / 100} hint={<Delta current={month.net} previous={prev.net} />} />
+        <Stat label={t('dash.income')} value={fmt(month.income)} rawValue={month.income / 100} hint={<Delta current={month.income} previous={prev.income} />} />
+        <Stat label={t('dash.expense')} value={fmt(month.expense)} rawValue={month.expense / 100} hint={<Delta current={month.expense} previous={prev.expense} goodWhenUp={false} />} />
+        <Stat label={t('dash.today')} value={fmt(day.net)} rawValue={day.net / 100} hint={<span className="muted">{t('dash.todayLine', { in: fmt(day.income), out: fmt(day.expense) })}</span>} />
       </div>
 
       <div className="grid-main">

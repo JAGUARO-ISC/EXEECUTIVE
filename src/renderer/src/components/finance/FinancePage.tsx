@@ -78,13 +78,13 @@ export const FinancePage: React.FC = () => {
       {skipped > 0 && <div className="notice warn">{t('adv.noRatesNote')}</div>}
 
       <div className="grid-4">
-        <Stat tone="accent" label={t('fin.net')} value={fmt(t0.net)} rawValue={t0.net} hint={<Delta current={t0.net} previous={p.net} />} />
-        <Stat label={t('fin.incomes')} value={fmt(t0.income)} rawValue={t0.income} hint={<Delta current={t0.income} previous={p.income} />} />
-        <Stat label={t('fin.expenses')} value={fmt(t0.expense)} rawValue={t0.expense} hint={<Delta current={t0.expense} previous={p.expense} goodWhenUp={false} />} />
+        <Stat tone="accent" label={t('fin.net')} value={fmt(t0.net)} rawValue={t0.net / 100} hint={<Delta current={t0.net} previous={p.net} />} />
+        <Stat label={t('fin.incomes')} value={fmt(t0.income)} rawValue={t0.income / 100} hint={<Delta current={t0.income} previous={p.income} />} />
+        <Stat label={t('fin.expenses')} value={fmt(t0.expense)} rawValue={t0.expense / 100} hint={<Delta current={t0.expense} previous={p.expense} goodWhenUp={false} />} />
         <Stat
           label={t('fin.avgDay')}
           value={fmt(elapsedDays ? Math.round(t0.expense / elapsedDays) : 0)}
-          rawValue={elapsedDays ? Math.round(t0.expense / elapsedDays) : 0}
+          rawValue={elapsedDays ? Math.round(t0.expense / elapsedDays) / 100 : 0}
           hint={<span className="muted">{best && best.expense > 0 ? t('fin.priciest', { day: best.day, amount: fmt(best.expense) }) : t('fin.noExpense')}</span>}
         />
       </div>

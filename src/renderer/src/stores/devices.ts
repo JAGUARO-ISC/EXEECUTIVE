@@ -42,6 +42,16 @@ const currentUserId = (): string => {
   return String(user.id);
 };
 
+const errorMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === 'string') return message;
+  }
+  return 'Errore dispositivi. Riprova.';
+};
+
 export const useDeviceStore = create<DeviceStore>((set, get) => ({
   current: null,
   devices: [],
@@ -61,7 +71,7 @@ export const useDeviceStore = create<DeviceStore>((set, get) => ({
       set({ devices, current, loaded: true, loading: false });
       if (current?.status === 'revoked' || current?.revoked_at) await useAuth.getState().logout();
     } catch (error) {
-      set({ loaded: true, loading: false, error: error instanceof Error ? error.message : String(error) });
+      set({ loaded: true, loading: false, error: errorMessage(error) });
     }
   },
 

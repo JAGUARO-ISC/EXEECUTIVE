@@ -41,9 +41,9 @@ export const StatsPage: React.FC = () => {
       </PageHead>
 
       <div className="grid-4">
-        <Stat tone="accent" label={`Saldo ${year}`} value={eur(yt.net)} hint={<span className="muted">Anno in corso</span>} />
-        <Stat label={`Entrate ${year}`} value={eur(yt.income)} />
-        <Stat label={`Uscite ${year}`} value={eur(yt.expense)} />
+        <Stat tone="accent" label={`Saldo ${year}`} value={eur(yt.net)} rawValue={yt.net / 100} hint={<span className="muted">Anno in corso</span>} />
+        <Stat label={`Entrate ${year}`} value={eur(yt.income)} rawValue={yt.income / 100} />
+        <Stat label={`Uscite ${year}`} value={eur(yt.expense)} rawValue={yt.expense / 100} />
         <Stat label="Attività completate" value={tasks.length ? `${done} / ${tasks.length}` : '0'} hint={<span className="muted">{open} ancora aperte</span>} />
       </div>
 
@@ -95,10 +95,10 @@ export const StatsPage: React.FC = () => {
       </div>
 
       <div className="grid-4">
-        <Stat label="Entrate" value={eur(mt.income)} hint={<Delta current={mt.income} previous={pt.income} />} />
-        <Stat label="Uscite" value={eur(mt.expense)} hint={<Delta current={mt.expense} previous={pt.expense} goodWhenUp={false} />} />
-        <Stat label="Saldo" value={eur(mt.net)} hint={<Delta current={mt.net} previous={pt.net} />} />
-        <Stat label="Quota risparmiata" value={savingsRate === null ? 'n.d.' : `${savingsRate}%`} hint={<span className="muted">Saldo diviso entrate</span>} />
+        <Stat label="Entrate" value={eur(mt.income)} rawValue={mt.income / 100} hint={<Delta current={mt.income} previous={pt.income} />} />
+        <Stat label="Uscite" value={eur(mt.expense)} rawValue={mt.expense / 100} hint={<Delta current={mt.expense} previous={pt.expense} goodWhenUp={false} />} />
+        <Stat label="Saldo" value={eur(mt.net)} rawValue={mt.net / 100} hint={<Delta current={mt.net} previous={pt.net} />} />
+        <Stat label="Quota risparmiata" value={savingsRate === null ? 'n.d.' : `${savingsRate}%`} rawValue={savingsRate ?? undefined} hint={<span className="muted">Saldo diviso entrate</span>} />
       </div>
 
       <div className="grid-2">
