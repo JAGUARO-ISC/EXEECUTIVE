@@ -111,7 +111,7 @@ export const DashboardPage: React.FC = () => {
                     {o.source.link && getLinkPreview(o.source.link) && <small className="appointment-link">{getLinkPreview(o.source.link)?.label}</small>}
                   </span>
                   {o.source.link && getLinkPreview(o.source.link) && <a className="appointment-external" href={o.source.link} target="_blank" rel="noreferrer" aria-label={`Apri ${getLinkPreview(o.source.link)?.label}`} onClick={(event) => event.stopPropagation()}><IconExternalLink size={15} /></a>}
-                  {o.source.link && getLinkPreview(o.source.link) && <img className="appointment-favicon" src={getLinkPreview(o.source.link)?.imageUrl} alt="" />}
+                  {(o.source.imageUrl || getLinkPreview(o.source.link ?? '')) && <img className="appointment-favicon" src={o.source.imageUrl || getLinkPreview(o.source.link ?? '')?.imageUrl} alt="" />}
                 </button>
               ))}
             </div>
@@ -135,7 +135,7 @@ export const DashboardPage: React.FC = () => {
                     {o.source.link && getLinkPreview(o.source.link) && <small className="appointment-link">{getLinkPreview(o.source.link)?.label}</small>}
                   </span>
                   {o.source.link && getLinkPreview(o.source.link) && <a className="appointment-external" href={o.source.link} target="_blank" rel="noreferrer" aria-label={`Apri ${getLinkPreview(o.source.link)?.label}`} onClick={(event) => event.stopPropagation()}><IconExternalLink size={15} /></a>}
-                  {o.source.link && getLinkPreview(o.source.link) && <img className="appointment-favicon" src={getLinkPreview(o.source.link)?.imageUrl} alt="" />}
+                  {(o.source.imageUrl || getLinkPreview(o.source.link ?? '')) && <img className="appointment-favicon" src={o.source.imageUrl || getLinkPreview(o.source.link ?? '')?.imageUrl} alt="" />}
                 </button>
               ))}
             </div>

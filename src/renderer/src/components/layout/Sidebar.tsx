@@ -23,6 +23,7 @@ import { quick, useUi, type Page } from '../../stores/ui';
 import { dateKey } from '../../utils/date';
 import { useT } from '../../i18n';
 import { useTheme } from '../../hooks/useTheme';
+import { useProfileStore } from '../../stores/profile';
 
 const NAV: { page: Page; key: string; icon: React.ElementType }[] = [
   { page: 'dashboard', key: 'nav.dashboard', icon: IconLayoutDashboard },
@@ -42,7 +43,8 @@ export const Sidebar: React.FC = () => {
   const tasks = useTaskStore((s) => s.items);
   const { theme, toggleTheme } = useTheme();
   const user = useAuth((s) => s.user);
-  const initials = (user?.displayName ?? user?.email ?? '?').split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
+  const profile = useProfileStore();
+  const initials = profile.initials() !== '?' ? profile.initials() : (user?.displayName ?? user?.email ?? '?').split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
   const overdue = useMemo(() => {
     const today = dateKey(new Date());
     return tasks.filter((t) => t.status !== 'done' && t.dueDate && t.dueDate < today).length;
@@ -94,7 +96,7 @@ export const Sidebar: React.FC = () => {
 
       <div className="side-foot">
         <button className={`profile-trigger${page === 'profile' ? ' active' : ''}`} data-tour="profile" onClick={() => setPage('profile')}>
-          <span className="profile-avatar" aria-hidden="true">{initials || '?'}</span>
+          {profile.imageData ? <img className="profile-avatar profile-avatar-image" src={profile.imageData} alt="" /> : <span className="profile-avatar" aria-hidden="true">{initials || '?'}</span>}
           <span className="profile-copy"><b>{user?.displayName || 'Profilo'}</b><small>{user?.email || 'Modifica profilo'}</small></span>
         </button>
         <button

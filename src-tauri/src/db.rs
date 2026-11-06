@@ -180,10 +180,17 @@ fn migrate(conn: &Connection) -> Result<(), rusqlite::Error> {
     add_column(conn, "transactions", "counterparty", "TEXT")?;
     add_column(conn, "goals", "currency", "TEXT NOT NULL DEFAULT 'EUR'")?;
     add_column(conn, "appointments", "link", "TEXT")?;
+    add_column(conn, "appointments", "image_url", "TEXT")?;
     Ok(())
 }
 
 fn add_column(conn: &Connection, table: &str, column: &str, decl: &str) -> Result<(), rusqlite::Error> {
+    let table_exists: bool = conn.query_row(
+        "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?1)",
+        [table],
+        |row| row.get(0),
+    )?;
+    if !table_exists { return Ok(()); }
     let mut stmt = conn.prepare(&format!("PRAGMA table_info({table})"))?;
     let exists = stmt
         .query_map([], |r| r.get::<_, String>(1))?
@@ -228,9 +235,11 @@ pub struct Appointment {
     pub updated_at: Option<String>,
     #[serde(default)]
     pub link: Option<String>,
+    #[serde(default)]
+    pub image_url: Option<String>,
 }
 
-pub const COLUMNS: &str = "id, title, description, start_datetime, end_datetime, location, category, color, priority, reminder_minutes, is_recurring, recurrence_pattern, recurrence_end, created_at, updated_at, link";
+pub const COLUMNS: &str = "id, title, description, start_datetime, end_datetime, location, category, color, priority, reminder_minutes, is_recurring, recurrence_pattern, recurrence_end, created_at, updated_at, link, image_url";
 
 pub fn row_to_appointment(row: &Row) -> rusqlite::Result<Appointment> {
     Ok(Appointment {
@@ -250,6 +259,7 @@ pub fn row_to_appointment(row: &Row) -> rusqlite::Result<Appointment> {
         created_at: row.get(13)?,
         updated_at: row.get(14)?,
         link: row.get(15)?,
+        image_url: row.get(16)?,
     })
 }
 
@@ -304,7 +314,7 @@ pub fn create_appointment(db: tauri::State<Db>, appointment: Appointment) -> Res
     validate(&appointment)?;
     let conn = db.0.lock().map_err(|e| e.to_string())?;
     conn.execute(
-        "INSERT INTO appointments (title, description, start_datetime, end_datetime, location, category, color, priority, reminder_minutes, is_recurring, recurrence_pattern, recurrence_end, link) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
+        "INSERT INTO appointments (title, description, start_datetime, end_datetime, location, category, color, priority, reminder_minutes, is_recurring, recurrence_pattern, recurrence_end, link, image_url) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)",
         params![
             appointment.title,
             appointment.description,
@@ -319,6 +329,7 @@ pub fn create_appointment(db: tauri::State<Db>, appointment: Appointment) -> Res
             appointment.recurrence_pattern,
             appointment.recurrence_end,
             appointment.link,
+            appointment.image_url,
         ],
     )
     .map_err(|e| e.to_string())?;
@@ -335,7 +346,7 @@ pub fn update_appointment(
     let conn = db.0.lock().map_err(|e| e.to_string())?;
     let n = conn
         .execute(
-            "UPDATE appointments SET title = ?1, description = ?2, start_datetime = ?3, end_datetime = ?4, location = ?5, category = ?6, color = ?7, priority = ?8, reminder_minutes = ?9, is_recurring = ?10, recurrence_pattern = ?11, recurrence_end = ?12, link = ?13, notified = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?14",
+            "UPDATE appointments SET title = ?1, description = ?2, start_datetime = ?3, end_datetime = ?4, location = ?5, category = ?6, color = ?7, priority = ?8, reminder_minutes = ?9, is_recurring = ?10, recurrence_pattern = ?11, recurrence_end = ?12, link = ?13, image_url = ?14, notified = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?15",
             params![
                 appointment.title,
                 appointment.description,
@@ -350,6 +361,7 @@ pub fn update_appointment(
                 appointment.recurrence_pattern,
                 appointment.recurrence_end,
                 appointment.link,
+                appointment.image_url,
                 id,
             ],
         )

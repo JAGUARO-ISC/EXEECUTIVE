@@ -11,7 +11,7 @@ import {
   occurrencesOnDay,
 } from '../../utils/date';
 import { IconLink, IconVideo } from '@tabler/icons-react';
-import { detectLinkMetadata } from '../../utils/linkMetadata';
+import { detectLinkMetadata, getLinkPreview } from '../../utils/linkMetadata';
 
 interface Props {
   days: Date[];
@@ -115,6 +115,7 @@ export const TimeGrid: React.FC<Props> = ({ days, appointments, onAddAppointment
                       <div className="ev-title">{o.title}</div>
                       {height > 48 && o.description && <div className="ev-sub">{o.description.slice(0, 90)}</div>}
                       {height > 70 && o.location && <div className="ev-sub">{o.location}</div>}
+                      {height > 70 && (o.imageUrl || getLinkPreview(o.link ?? '')) && <img className="ev-preview-image" src={o.imageUrl || getLinkPreview(o.link ?? '')?.imageUrl} alt="" />}
                       {height > 70 && o.link && detectLinkMetadata(o.link) && (
                         <a
                           className="ev-sub ev-link-label"

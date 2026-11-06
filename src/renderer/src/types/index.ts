@@ -3,6 +3,7 @@ export interface Appointment {
   title: string;
   description?: string | null;
   link?: string | null;
+  imageUrl?: string | null;
   startDatetime: string;
   endDatetime: string;
   location?: string | null;

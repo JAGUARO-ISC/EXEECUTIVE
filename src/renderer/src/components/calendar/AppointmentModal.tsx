@@ -29,6 +29,7 @@ interface FormValues {
   title: string;
   description: string;
   link: string;
+  imageUrl: string;
   startDatetime: Date;
   endDatetime: Date;
   location: string;
@@ -45,6 +46,7 @@ const defaults = (start: Date): FormValues => ({
   title: '',
   description: '',
   link: '',
+  imageUrl: '',
   startDatetime: start,
   endDatetime: new Date(start.getTime() + 3600000),
   location: '',
@@ -78,6 +80,7 @@ export const AppointmentModal: React.FC<Props> = ({ opened, onClose, appointment
         title: appointment.title,
         description: appointment.description ?? '',
         link: appointment.link ?? '',
+        imageUrl: appointment.imageUrl ?? '',
         startDatetime: new Date(appointment.startDatetime),
         endDatetime: new Date(appointment.endDatetime),
         location: appointment.location ?? '',
@@ -102,6 +105,7 @@ export const AppointmentModal: React.FC<Props> = ({ opened, onClose, appointment
       title: v.title.trim(),
       description: v.description.trim() || null,
       link: v.link.trim() ? (detectLinkMetadata(v.link.trim()) ? v.link.trim() : null) : null,
+      imageUrl: v.imageUrl.trim() || null,
       startDatetime: v.startDatetime.toISOString(),
       endDatetime: v.endDatetime.toISOString(),
       location: v.location || null,
@@ -146,6 +150,7 @@ export const AppointmentModal: React.FC<Props> = ({ opened, onClose, appointment
           <TextInput label="Titolo" placeholder="Riunione con cliente" data-autofocus {...form.getInputProps('title')} />
           <Textarea label="Descrizione" rows={3} {...form.getInputProps('description')} />
           <TextInput label="Link" placeholder="https://meet.google.com/..." {...form.getInputProps('link')} />
+          <TextInput label="Immagine" placeholder="https://.../foto.jpg" description="URL pubblico della foto o copertina dell'appuntamento" {...form.getInputProps('imageUrl')} />
           <Group grow align="flex-start">
             <DateTimePicker label="Inizio" valueFormat="DD MMM YYYY HH:mm" {...form.getInputProps('startDatetime')} />
             <DateTimePicker label="Fine" valueFormat="DD MMM YYYY HH:mm" {...form.getInputProps('endDatetime')} />
