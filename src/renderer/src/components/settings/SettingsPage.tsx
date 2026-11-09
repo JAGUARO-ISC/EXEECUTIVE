@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { invoke } from '@tauri-apps/api/core';
 import { notifications } from '@mantine/notifications';
 import { IconBell, IconCheck, IconDatabaseExport, IconRefresh, IconSearch } from '@tabler/icons-react';
@@ -16,9 +17,9 @@ const ACCENT_NAMES: AccentName[] = ['orange', 'lime', 'blue', 'violet', 'red'];
 
 import type { Rates } from '../../utils/currency';
 
-interface CurrencyConverterProps { rates: Rates; defaultCurrency: string; t: (k: string) => string; }
+interface CurrencyConverterProps { rates: Rates; ratesHistory: Record<string, { date: string; rate: number }[]>; defaultCurrency: string; t: (k: string) => string; }
 
-const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ rates, defaultCurrency, t }) => {
+const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ rates, ratesHistory, defaultCurrency, t }) => {
   const [amount, setAmount] = useState('');
   const [from, setFrom] = useState(defaultCurrency);
   const [to, setTo] = useState(defaultCurrency === 'USD' ? 'EUR' : 'USD');
@@ -51,6 +52,9 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ rates, defaultCur
           {CURRENCIES.map((c) => <option key={c.code} value={c.code}>{c.code}</option>)}
         </select>
       </div>
+      <div className="rate-chart" aria-label="Andamento del tasso di cambio">
+        {(ratesHistory[to] ?? []).length > 1 ? <ResponsiveContainer width="100%" height={120}><LineChart data={ratesHistory[to]}><XAxis dataKey="date" hide /><YAxis domain={['auto', 'auto']} hide /><Tooltip /><Line type="monotone" dataKey="rate" stroke="var(--accent)" strokeWidth={2} dot={false} /></LineChart></ResponsiveContainer> : <small className="muted">Lo storico apparirà dopo più aggiornamenti.</small>}
+      </div>
     </div>
   );
 };
@@ -68,7 +72,7 @@ const FLAG: Record<string, string> = { it: 'IT', en: 'EN', es: 'ES', fr: 'FR', d
 
 export const SettingsPage: React.FC = () => {
   const { t, locale } = useT();
-  const { lang, currency, ratesDate, rates, accent, setLang, setCurrency, refreshRates, setAccent } = useSettings();
+  const { lang, currency, ratesDate, rates, ratesHistory, accent, setLang, setCurrency, refreshRates, setAccent } = useSettings();
   const [info, setInfo] = useState<DbInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastBackup, setLastBackup] = useState<string | null>(null);
@@ -244,7 +248,7 @@ export const SettingsPage: React.FC = () => {
       </Panel>
 
       <Panel title={t('conv.title')} sub={t('conv.sub')}>
-        <CurrencyConverter rates={rates} defaultCurrency={currency} t={t} />
+        <CurrencyConverter rates={rates} ratesHistory={ratesHistory} defaultCurrency={currency} t={t} />
       </Panel>
     </div>
   );

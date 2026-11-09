@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { IconChevronLeft, IconChevronRight, IconPlus } from '@tabler/icons-react';
+import { ContextMenu, type ContextMenuItem } from '../common/ContextMenu';
 import { useAppointmentStore } from '../../stores';
 import { useUi } from '../../stores/ui';
 import type { Appointment, CalendarView } from '../../types';
@@ -68,6 +69,7 @@ const title = (view: CalendarView, d: Date): { main: string; sub: string } => {
 export const CalendarPage: React.FC = () => {
   const [view, setView] = useState<CalendarView>('month');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [menu, setMenu] = useState<{ x: number; y: number; appointment: Appointment | null; date: Date } | null>(null);
   const open = useUi((s) => s.open);
   const modal = useUi((s) => s.modal);
   const prevDate = useRef(selectedDate);
@@ -147,11 +149,11 @@ export const CalendarPage: React.FC = () => {
           </div>
         </div>
         {error && <div className="err">{error}</div>}
-        <div className="stage">
+        <div className="stage" onContextMenu={(event) => { event.preventDefault(); setMenu({ x: event.clientX, y: event.clientY, appointment: null, date: selectedDate }); }}>
           <Swap key={animKey} variant={variant}>
             {view === 'day' && <CalendarDayView {...common} />}
             {view === 'week' && <CalendarWeekView {...common} />}
-            {view === 'month' && <CalendarMonthView {...common} />}
+            {view === 'month' && <CalendarMonthView {...common} onContextMenu={(event, appointment, date) => { event.preventDefault(); setMenu({ x: event.clientX, y: event.clientY, appointment, date }); }} />}
             {view === 'year' && (
               <CalendarYearView
                 date={selectedDate}
@@ -166,6 +168,11 @@ export const CalendarPage: React.FC = () => {
           </Swap>
         </div>
       </div>
+      {menu && <ContextMenu x={menu.x} y={menu.y} onClose={() => setMenu(null)} items={[
+        ...(menu.appointment ? [{ label: 'Modifica appuntamento', onSelect: () => openEdit(menu.appointment!) }, { label: 'Rimuovi appuntamento', danger: true, onSelect: () => { if (menu.appointment?.id) void useAppointmentStore.getState().deleteAppointment(menu.appointment.id); } }] : []),
+        { label: 'Aggiungi appuntamento', onSelect: () => openNew(menu.date) },
+        { label: 'Vai a oggi', onSelect: () => setSelectedDate(new Date()) },
+      ] as ContextMenuItem[]} />}
 
       <aside className="cal-side">
         <MiniCalendar date={selectedDate} appointments={appointments} onSelect={setSelectedDate} />

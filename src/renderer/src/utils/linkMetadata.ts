@@ -23,6 +23,8 @@ export function getLinkPreview(value: string): LinkPreview | null {
   }
 }
 
+export const linkIconUrl = (value: string): string | null => getLinkPreview(value)?.imageUrl ?? null;
+
 export function detectLinkMetadata(value: string): LinkMetadata | null {
   try {
     const url = new URL(value.trim());

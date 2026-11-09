@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 import type { Lang } from '../i18n';
 import type { Rates } from '../utils/currency';
 import { errorMessage } from '../utils/errorMessage';
+import { appendRatePoint, readRateHistory, writeRateHistory } from '../utils/ratesHistory';
 
 const msg = errorMessage;
 
@@ -43,6 +44,7 @@ interface SettingsStore {
   currency: string;
   rates: Rates;
   ratesDate: string | null;
+  ratesHistory: Record<string, { date: string; rate: number }[]>;
   advisor: AdvisorInput;
   accent: AccentName;
   loaded: boolean;
@@ -81,6 +83,7 @@ export const useSettings = create<SettingsStore>((set, get) => ({
   currency: 'EUR',
   rates: {},
   ratesDate: null,
+  ratesHistory: {},
   advisor: DEFAULT_ADVISOR,
   accent: 'orange',
   loaded: false,
@@ -96,6 +99,7 @@ export const useSettings = create<SettingsStore>((set, get) => ({
         currency: m.currency || 'EUR',
         rates: parse<Rates>(m.rates, {}),
         ratesDate: m.rates_date || null,
+        ratesHistory: parse<Record<string, { date: string; rate: number }[]>>(m.rates_history, {}),
         advisor: { ...DEFAULT_ADVISOR, ...parse<Partial<AdvisorInput>>(m.advisor, {}) },
         accent,
         loaded: true,
@@ -131,9 +135,13 @@ export const useSettings = create<SettingsStore>((set, get) => ({
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = (await res.json()) as { date: string; rates: Rates };
       if (!json.rates || typeof json.rates !== 'object') throw new Error('risposta non valida');
-      set({ rates: json.rates, ratesDate: json.date });
+      const previous = get().ratesHistory;
+      const ratesHistory = Object.fromEntries(Object.entries(json.rates).map(([code, rate]) => [code, appendRatePoint(previous[code] ?? [], { date: json.date, rate })]));
+      set({ rates: json.rates, ratesDate: json.date, ratesHistory });
       await save('rates', JSON.stringify(json.rates));
       await save('rates_date', json.date);
+      await save('rates_history', JSON.stringify(ratesHistory));
+      writeRateHistory('exec_rates_history', appendRatePoint(readRateHistory('exec_rates_history'), { date: json.date, rate: json.rates.USD ?? 0 }));
       return null;
     } catch (e) {
       return msg(e);

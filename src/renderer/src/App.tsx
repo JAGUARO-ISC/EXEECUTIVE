@@ -47,7 +47,9 @@ const App: React.FC = () => {
 
   useEffect(() => {
     void useAuth.getState().load();
-    void useSettings.getState().load();
+    void useSettings.getState().load().then(() => useSettings.getState().refreshRates());
+    const timer = window.setInterval(() => { void useSettings.getState().refreshRates(); }, 15 * 60 * 1000);
+    return () => window.clearInterval(timer);
     void useTaskStore.getState().load();
     void useTxStore.getState().load();
     void useNoteStore.getState().load();

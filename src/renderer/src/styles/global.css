@@ -187,6 +187,7 @@ h1, h2, h3, h4, .display {
 .ev-link-icon { position: absolute; top: 5px; left: 5px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 7px; background: rgba(10, 11, 14, 0.42); color: var(--text); }
 .ev-link-icon + .ev-time { margin-left: 25px; max-width: calc(100% - 25px); }
 .ev-link-label { display: block; color: var(--accent); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }.ev-preview-image{display:block;width:32px;height:32px;margin:5px 4px;border-radius:8px;object-fit:cover;background:var(--panel-2)}
+.context-menu{position:fixed;z-index:1000;min-width:210px;padding:8px;border:1px solid var(--line);border-radius:12px;background:rgba(20,23,31,.96);box-shadow:0 16px 40px rgba(0,0,0,.35);backdrop-filter:blur(18px)}.context-menu button{display:block;width:100%;padding:10px 12px;border:0;border-radius:8px;background:transparent;color:var(--text);text-align:left;cursor:pointer}.context-menu button:hover,.context-menu button:focus-visible{background:var(--accent-soft);outline:0}.context-menu button.danger{color:#f87171}.chip-provider{display:inline-flex;align-items:center;gap:4px}.chip-provider button,.chip-provider a{display:inline-flex;align-items:center;border:0;background:transparent;color:inherit;padding:0;cursor:pointer}.chip-favicon{width:13px;height:13px;border-radius:3px;object-fit:cover}.ev-link-copy{border:0;background:transparent;color:var(--accent);cursor:pointer;padding:2px}
 
 .chip {
   --c: #3b82f6;
